@@ -36,7 +36,14 @@ namespace DevBlah.SqlExpressionBuilder.Statements
                 sb.AppendFormat("TOP {0} ", Top);
             }
 
-            sb.Append(string.Join(", ", _expressions.Select(x => x.ToString())));
+            if (_expressions.Count > 0)
+            {
+                sb.Append(string.Join(", ", _expressions.Select(x => x.ToString())));
+            }
+            else
+            {
+                sb.Append("*");
+            }
 
             return sb.ToString();
         }

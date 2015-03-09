@@ -1,3 +1,7 @@
 DevBlah.SqlExpressionBuilder.v12.suo
+packages
 DevBlah.SqlExpressionBuilder/bin
 DevBlah.SqlExpressionBuilder/obj
+DevBlah.SqlExpressionBuilder.Tests/bin
+DevBlah.SqlExpressionBuilder.Tests/obj
+*.user
