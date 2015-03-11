@@ -26,27 +26,27 @@ ISqlExpressionBuilder builder = new SqlExpressionBuilderSelect();
 
 // products
 var productsTable = new Table("dbo.Products", "p");
-ExpressionColumn productsTablePk = productsTable.GetColumn("Id");
+ColumnExpression productsTablePk = productsTable.GetColumn("Id");
 builder.From(productsTable);
 builder.Select(new[] { "Id", "Name" }, productsTable);
 
 // categories
 var categoriesTable = new Table("dbo.Categories", "c");
-ExpressionColumn categoryIdPk = categoriesTable.GetColumn("Id");
-builder.JoinInner(new Compare<ExpressionColumn, ExpressionColumn>(
+ColumnExpression categoryIdPk = categoriesTable.GetColumn("Id");
+builder.JoinInner(new Compare<ColumnExpression, ColumnExpression>(
     productsTable.GetColumn("categoryId"),
     categoryIdPk));
-builder.Where(new Compare<ExpressionColumn, IDbDataParameter>(
+builder.Where(new Compare<ColumnExpression, IDbDataParameter>(
     CompareOperations.GreaterThan,
     categoryIdPk,
     new SqlParameter("@categoryId", SqlDbType.Int) { Value = 5 }));
 
 // stock
 var stockTable = new Table("dbo.stock", "s");
-builder.JoinLeft(new Compare<ExpressionColumn, ExpressionColumn>(
+builder.JoinLeft(new Compare<ColumnExpression, ColumnExpression>(
     productsTablePk,
     stockTable.GetColumn("productId")));
-builder.Select(new[] {"Count", "Sold"}, stockTable);
+builder.Select(new[] { "Count", "Sold" }, stockTable);
 ````
 results in:
 ````SQL
