@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using DevBlah.SqlExpressionBuilder.Expressions;
 
 namespace DevBlah.SqlExpressionBuilder
 {
+    /// <summary>
+    /// Interface for creating a implementation for a specific database driver
+    /// </summary>
     public interface ISqlExpressionBuilder
     {
         /// <summary>
@@ -186,7 +190,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="type">type of the join</param>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ExpressionColumn, ExpressionColumn> on);
+        ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -196,7 +200,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ExpressionColumn, ExpressionColumn> on,
+        ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -251,7 +255,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Compare<ExpressionColumn, ExpressionColumn> on);
+        ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -260,7 +264,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns);
+        ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -314,7 +318,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Compare<ExpressionColumn, ExpressionColumn> on);
+        ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -323,7 +327,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns);
+        ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -377,7 +381,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Compare<ExpressionColumn, ExpressionColumn> on);
+        ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -386,7 +390,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns);
+        ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -440,7 +444,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Compare<ExpressionColumn, ExpressionColumn> on);
+        ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -449,7 +453,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns);
+        ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// adds a column to the order expression
@@ -488,7 +492,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="column">column, which should be ordered</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ExpressionColumn column);
+        ISqlExpressionBuilder Order(ColumnExpression column);
 
         /// <summary>
         /// adds a column to the order expression
@@ -496,7 +500,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">column, which should be ordered</param>
         /// <param name="options">direction of the order</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ExpressionColumn column, OrderOptions options);
+        ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options);
 
         /// <summary>
         /// adds a column to the order expression
@@ -504,7 +508,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">column, which should be ordered</param>
         /// <param name="options">expression option</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ExpressionColumn column, ExpressionOptions options);
+        ISqlExpressionBuilder Order(ColumnExpression column, ExpressionOptions options);
 
         /// <summary>
         /// adds a column to the order expression
@@ -513,7 +517,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="options">direction of the order</param>
         /// <param name="expOptions">expression option</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ExpressionColumn column, OrderOptions options, ExpressionOptions expOptions);
+        ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options, ExpressionOptions expOptions);
 
         /// <summary>
         /// Selects a column from the default table
@@ -591,21 +595,21 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="compare">compare instance</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(Compare<ExpressionColumn, IDbDataParameter> compare);
+        ISqlExpressionBuilder Where(Compare<ColumnExpression, IDbDataParameter> compare);
 
         /// <summary>
         /// Adds a single comparison between a column and a IDbDataParameter, given as a string
         /// </summary>
         /// <param name="compare"></param>
         /// <returns></returns>
-        ISqlExpressionBuilder Where(Compare<ExpressionColumn, string> compare);
+        ISqlExpressionBuilder Where(Compare<ColumnExpression, string> compare);
 
         /// <summary>
         /// Adds a single comparison between a column and an sql expression
         /// </summary>
         /// <param name="compare"></param>
         /// <returns></returns>
-        ISqlExpressionBuilder Where(Compare<ExpressionColumn, Expression> compare);
+        ISqlExpressionBuilder Where(Compare<ColumnExpression, Expression> compare);
 
         /// <summary>
         /// Adds a single comparison between a column and a IDbDataParameter

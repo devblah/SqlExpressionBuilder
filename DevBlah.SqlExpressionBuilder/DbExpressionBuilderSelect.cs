@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
+using DevBlah.SqlExpressionBuilder.Expressions;
 using DevBlah.SqlExpressionBuilder.Statements;
 
 namespace DevBlah.SqlExpressionBuilder
 {
+    /// <summary>
+    /// Template class for using the expression builder with different db types
+    /// </summary>
+    /// <typeparam name="TDbParameter">subtype IDbParameter</typeparam>
     public abstract class DbExpressionBuilderSelect<TDbParameter> : ISqlExpressionBuilder
         where TDbParameter : IDbDataParameter, new()
     {
@@ -18,11 +23,17 @@ namespace DevBlah.SqlExpressionBuilder
         private readonly StatementWhere _stmtWhere = new StatementWhere();
         private readonly StatementGroup _stmtGroup = new StatementGroup();
 
+        /// <summary>
+        /// List of currently assigned db parameters
+        /// </summary>
         public IEnumerable<IDbDataParameter> Parameters
         {
             get { return _parameters; }
         }
 
+        /// <summary>
+        /// Specifies how the parts of the where expression are connected to each other
+        /// </summary>
         public string WhereLogicalConnectionString
         {
             get { return _stmtWhere.LogicalConnectionString; }
@@ -126,6 +137,10 @@ namespace DevBlah.SqlExpressionBuilder
             return this;
         }
 
+        /// <summary>
+        /// Adds the distinct keyword to the query, to avoid getting duplicate rows
+        /// </summary>
+        /// <returns></returns>
         public ISqlExpressionBuilder Distinct()
         {
             _stmtSelect.Distinct = true;
@@ -336,7 +351,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="type">type of the join</param>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ExpressionColumn, ExpressionColumn> on)
+        public ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on)
         {
             if (!_IsTablePresent(on.Actual.Table))
                 throw new Exception("The referenced table you want to add does not exist in this context.");
@@ -353,7 +368,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ExpressionColumn, ExpressionColumn> on,
+        public ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns)
         {
             _AddColumnsToSelect(columns, on.Expected.Table);
@@ -433,7 +448,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinInner(Compare<ExpressionColumn, ExpressionColumn> on)
+        public ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Inner, on);
             return this;
@@ -446,7 +461,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinInner(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns)
+        public ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Inner, on, columns);
             return this;
@@ -524,7 +539,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinLeft(Compare<ExpressionColumn, ExpressionColumn> on)
+        public ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Left, on);
             return this;
@@ -537,7 +552,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinLeft(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns)
+        public ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Left, on, columns);
             return this;
@@ -615,7 +630,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinOuter(Compare<ExpressionColumn, ExpressionColumn> on)
+        public ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Outer, on);
             return this;
@@ -628,7 +643,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinOuter(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns)
+        public ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Outer, on, columns);
             return this;
@@ -706,7 +721,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinRight(Compare<ExpressionColumn, ExpressionColumn> on)
+        public ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Right, on);
             return this;
@@ -719,7 +734,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder JoinRight(Compare<ExpressionColumn, ExpressionColumn> on, IEnumerable<string> columns)
+        public ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Right, on, columns);
             return this;
@@ -781,7 +796,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="column">column, which should be ordered</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder Order(ExpressionColumn column)
+        public ISqlExpressionBuilder Order(ColumnExpression column)
         {
             Order(column, OrderOptions.Asc);
             return this;
@@ -793,7 +808,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">column, which should be ordered</param>
         /// <param name="options">direction of the order</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder Order(ExpressionColumn column, OrderOptions options)
+        public ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options)
         {
             Order(column, options, ExpressionOptions.Add);
             return this;
@@ -805,7 +820,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">column, which should be ordered</param>
         /// <param name="options">expression option</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder Order(ExpressionColumn column, ExpressionOptions options)
+        public ISqlExpressionBuilder Order(ColumnExpression column, ExpressionOptions options)
         {
             Order(column, OrderOptions.Asc, options);
             return this;
@@ -818,7 +833,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="options">direction of the order</param>
         /// <param name="expOptions">expression option</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder Order(ExpressionColumn column, OrderOptions options, ExpressionOptions expOptions)
+        public ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options, ExpressionOptions expOptions)
         {
             if (!_IsTablePresent(column.Table))
                 throw new Exception("The table of the order column doesn't exist in this context.");
@@ -875,7 +890,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <returns>this instance</returns>
         public ISqlExpressionBuilder Select(string column, Table table)
         {
-            _stmtSelect.Expressions.Add(new ExpressionColumn(column, table));
+            _stmtSelect.Expressions.Add(new ColumnExpression(column, table));
             return this;
         }
 
@@ -965,7 +980,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="compare">compare instance</param>
         /// <returns>this instance</returns>
-        public ISqlExpressionBuilder Where(Compare<ExpressionColumn, IDbDataParameter> compare)
+        public ISqlExpressionBuilder Where(Compare<ColumnExpression, IDbDataParameter> compare)
         {
             Where(compare.ToString(), compare.Expected.ParameterName);
             BindParameter(compare.Expected);
@@ -977,7 +992,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="compare"></param>
         /// <returns></returns>
-        public ISqlExpressionBuilder Where(Compare<ExpressionColumn, string> compare)
+        public ISqlExpressionBuilder Where(Compare<ColumnExpression, string> compare)
         {
             Where(compare.ToString());
             BindParameter(new TDbParameter { ParameterName = compare.Expected });
@@ -989,7 +1004,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="compare"></param>
         /// <returns></returns>
-        public ISqlExpressionBuilder Where(Compare<ExpressionColumn, Expression> compare)
+        public ISqlExpressionBuilder Where(Compare<ColumnExpression, Expression> compare)
         {
             Where(compare.ToString());
             return this;
@@ -1028,7 +1043,7 @@ namespace DevBlah.SqlExpressionBuilder
         {
             foreach (string col in columns)
             {
-                _stmtSelect.Expressions.Add(new ExpressionColumn(col, table));
+                _stmtSelect.Expressions.Add(new ColumnExpression(col, table));
             }
         }
 
@@ -1046,17 +1061,17 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="column">column name</param>
         /// <returns>created column</returns>
-        private ExpressionColumn _CreateColumnByName(string column)
+        private ColumnExpression _CreateColumnByName(string column)
         {
             // check if default table exists
             _CheckDefaultTable();
-            ExpressionColumn col;
+            ColumnExpression col;
             // split to get table alias and column name
             var split = column.Split('.');
             if (split.Length == 1)
             {
                 // no table alias is given -> take default table
-                col = new ExpressionColumn(column, _stmtFrom.Tables.First());
+                col = new ColumnExpression(column, _stmtFrom.Tables.First());
             }
             else if (split.Length == 2)
             {
@@ -1067,7 +1082,7 @@ namespace DevBlah.SqlExpressionBuilder
                     throw new Exception(String.Format(
                         "Table with alias '{0}' does't exist in this context", split[0]));
                 }
-                col = new ExpressionColumn(split[1], table);
+                col = new ColumnExpression(split[1], table);
             }
             else
             {

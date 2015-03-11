@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using DevBlah.SqlExpressionBuilder.Expressions;
+using Xunit;
 
 namespace DevBlah.SqlExpressionBuilder.Tests
 {
@@ -22,7 +23,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         public void TestColumnCreationAndToString()
         {
             var table = new Table("table", "t");
-            var column = new ExpressionColumn("col1", table);
+            var column = new ColumnExpression("col1", table);
             Assert.Equal("t.col1", column.ToString());
         }
     }

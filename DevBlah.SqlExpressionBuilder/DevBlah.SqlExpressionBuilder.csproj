@@ -41,15 +41,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AliasedExpression.cs" />
+    <Compile Include="Expressions\AliasedExpression.cs" />
     <Compile Include="Compare.cs" />
     <Compile Include="DbExpressionBuilderSelect.cs" />
     <Compile Include="Enums.cs" />
-    <Compile Include="Expression.cs" />
-    <Compile Include="ExpressionColumn.cs" />
-    <Compile Include="ExpressionCount.cs" />
+    <Compile Include="Expressions\Expression.cs" />
+    <Compile Include="Expressions\ColumnExpression.cs" />
+    <Compile Include="Expressions\CountExpression.cs" />
     <Compile Include="Expressions\NullExpression.cs" />
-    <Compile Include="IExpression.cs" />
+    <Compile Include="Expressions\IExpression.cs" />
     <Compile Include="ISqlExpressionBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlExpressionBuilderSelect.cs" />

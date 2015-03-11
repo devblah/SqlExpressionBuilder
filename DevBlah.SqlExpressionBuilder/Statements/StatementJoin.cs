@@ -1,4 +1,5 @@
 ﻿using System;
+using DevBlah.SqlExpressionBuilder.Expressions;
 
 namespace DevBlah.SqlExpressionBuilder.Statements
 {
@@ -18,7 +19,7 @@ namespace DevBlah.SqlExpressionBuilder.Statements
             On = on;
         }
 
-        public StatementJoin(SqlJoinTypes joinType, Compare<ExpressionColumn, ExpressionColumn> comparer)
+        public StatementJoin(SqlJoinTypes joinType, Compare<ColumnExpression, ColumnExpression> comparer)
             : this(joinType, comparer.Expected.Table, comparer.ToString())
         { }
 

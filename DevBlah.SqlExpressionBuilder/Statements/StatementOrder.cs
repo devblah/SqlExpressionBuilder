@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DevBlah.SqlExpressionBuilder.Expressions;
 
 namespace DevBlah.SqlExpressionBuilder.Statements
 {
     internal class StatementOrder : StatementBase
     {
-        private Dictionary<ExpressionColumn, OrderOptions> _columns = new Dictionary<ExpressionColumn, OrderOptions>();
+        private Dictionary<ColumnExpression, OrderOptions> _columns = new Dictionary<ColumnExpression, OrderOptions>();
 
-        public Dictionary<ExpressionColumn, OrderOptions> Columns
+        public Dictionary<ColumnExpression, OrderOptions> Columns
         {
             get { return _columns; }
             set { _columns = value; }

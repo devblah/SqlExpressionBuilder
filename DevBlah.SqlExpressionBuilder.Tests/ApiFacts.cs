@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using DevBlah.SqlExpressionBuilder.Expressions;
 using Xunit;
 
 namespace DevBlah.SqlExpressionBuilder.Tests
@@ -18,8 +19,8 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             Assert.Equal("SELECT * FROM from f", builder.ToString());
 
-            var expr = new AliasedExpression<ExpressionCount>(
-                new ExpressionCount(new ExpressionColumn("Id", fromTable)), "Anzahl");
+            var expr = new AliasedExpression<CountExpression>(
+                new CountExpression(new ColumnExpression("Id", fromTable)), "Anzahl");
             Assert.Equal("SELECT COUNT(f.Id) AS Anzahl FROM from f", builder.GetSingleSelectString(expr));
             Assert.Equal("SELECT * FROM from f", builder.ToString());
         }
@@ -57,9 +58,9 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 builder
                     .From(fromTable)
                     .JoinInner(
-                        new Compare<ExpressionColumn, ExpressionColumn>(
-                            new ExpressionColumn("bla", fromTable),
-                            new ExpressionColumn("bla", joinTable1)));
+                        new Compare<ColumnExpression, ColumnExpression>(
+                            new ColumnExpression("bla", fromTable),
+                            new ColumnExpression("bla", joinTable1)));
             }
             catch
             {
@@ -75,9 +76,9 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 builder
                     .From(fromTable)
                     .JoinInner(
-                        new Compare<ExpressionColumn, ExpressionColumn>(
-                            new ExpressionColumn("bla", joinTable1),     // first table has to be the referenced table
-                            new ExpressionColumn("bla", fromTable)));
+                        new Compare<ColumnExpression, ColumnExpression>(
+                            new ColumnExpression("bla", joinTable1),     // first table has to be the referenced table
+                            new ColumnExpression("bla", fromTable)));
             }
             catch
             {
@@ -93,13 +94,13 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 builder
                     .From(fromTable)
                     .JoinInner(
-                        new Compare<ExpressionColumn, ExpressionColumn>(
-                            new ExpressionColumn("bla", fromTable),
-                            new ExpressionColumn("bla", joinTable1)))
+                        new Compare<ColumnExpression, ColumnExpression>(
+                            new ColumnExpression("bla", fromTable),
+                            new ColumnExpression("bla", joinTable1)))
                     .JoinInner(
-                        new Compare<ExpressionColumn, ExpressionColumn>(
-                            new ExpressionColumn("bla", joinTable1),
-                            new ExpressionColumn("bla", joinTable2)));
+                        new Compare<ColumnExpression, ColumnExpression>(
+                            new ColumnExpression("bla", joinTable1),
+                            new ColumnExpression("bla", joinTable2)));
             }
             catch
             {
@@ -134,13 +135,13 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 new[] { "col1", "col2" },
                 new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinInner(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable5),
-                    new ExpressionColumn("j5_Id", joinTable6)));
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable5),
+                    new ColumnExpression("j5_Id", joinTable6)));
             builder.JoinInner(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable6),
-                    new ExpressionColumn("j6_Id", joinTable7)),
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable6),
+                    new ColumnExpression("j6_Id", joinTable7)),
                 new[] { "col1", "col2" });
 
             const string expected = "SELECT j3.col1, j3.col2, j3.col3, j5.col1, j5.col2, j7.col1, j7.col2 " +
@@ -184,13 +185,13 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 new[] { "col1", "col2" },
                 new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinLeft(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable5),
-                    new ExpressionColumn("j5_Id", joinTable6)));
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable5),
+                    new ColumnExpression("j5_Id", joinTable6)));
             builder.JoinLeft(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable6),
-                    new ExpressionColumn("j6_Id", joinTable7)),
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable6),
+                    new ColumnExpression("j6_Id", joinTable7)),
                 new[] { "col1", "col2" });
 
             const string expected = "SELECT j3.col1, j3.col2, j3.col3, j5.col1, j5.col2, j7.col1, j7.col2 " +
@@ -234,13 +235,13 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 new[] { "col1", "col2" },
                 new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinOuter(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable5),
-                    new ExpressionColumn("j5_Id", joinTable6)));
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable5),
+                    new ColumnExpression("j5_Id", joinTable6)));
             builder.JoinOuter(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable6),
-                    new ExpressionColumn("j6_Id", joinTable7)),
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable6),
+                    new ColumnExpression("j6_Id", joinTable7)),
                 new[] { "col1", "col2" });
 
             const string expected = "SELECT j3.col1, j3.col2, j3.col3, j5.col1, j5.col2, j7.col1, j7.col2 " +
@@ -284,13 +285,13 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 new[] { "col1", "col2" },
                 new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinRight(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable5),
-                    new ExpressionColumn("j5_Id", joinTable6)));
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable5),
+                    new ColumnExpression("j5_Id", joinTable6)));
             builder.JoinRight(
-                new Compare<ExpressionColumn, ExpressionColumn>(
-                    new ExpressionColumn("Id", joinTable6),
-                    new ExpressionColumn("j6_Id", joinTable7)),
+                new Compare<ColumnExpression, ColumnExpression>(
+                    new ColumnExpression("Id", joinTable6),
+                    new ColumnExpression("j6_Id", joinTable7)),
                 new[] { "col1", "col2" });
 
             const string expected = "SELECT j3.col1, j3.col2, j3.col3, j5.col1, j5.col2, j7.col1, j7.col2 " +
@@ -342,17 +343,17 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 .JoinInner(joinTable, "wayne = wayne")
                 .Order("j.blubb", OrderOptions.Desc)
                 .Order("j.foo", ExpressionOptions.Overwrite)
-                .Order(new ExpressionColumn("bla", fromTable))
-                .Order(new ExpressionColumn("muh", fromTable), OrderOptions.Desc);
+                .Order(new ColumnExpression("bla", fromTable))
+                .Order(new ColumnExpression("muh", fromTable), OrderOptions.Desc);
             expectedTemplate += "INNER JOIN dbo.join j ON wayne = wayne ";
             expected = expectedTemplate + "ORDER BY j.foo ASC, f.bla ASC, f.muh DESC";
             Assert.Equal(expected, builder.ToString());
 
-            builder.Order(new ExpressionColumn("bla", fromTable), ExpressionOptions.Overwrite);
+            builder.Order(new ColumnExpression("bla", fromTable), ExpressionOptions.Overwrite);
             expected = expectedTemplate + "ORDER BY f.bla ASC";
             Assert.Equal(expected, builder.ToString());
 
-            builder.Order(new ExpressionColumn("foo", fromTable), OrderOptions.Desc, ExpressionOptions.Overwrite);
+            builder.Order(new ColumnExpression("foo", fromTable), OrderOptions.Desc, ExpressionOptions.Overwrite);
             expected = expectedTemplate + "ORDER BY f.foo DESC";
             Assert.Equal(expected, builder.ToString());
 
@@ -362,7 +363,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder.From(fromTable).Order("bla");
             try
             {
-                builder.Order(new ExpressionColumn("foo", joinTable)); // table does not exist in sql builder
+                builder.Order(new ColumnExpression("foo", joinTable)); // table does not exist in sql builder
             }
             catch
             {
@@ -427,12 +428,12 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder = new SqlExpressionBuilderSelect();
             builder.From(fromTable);
             builder.Where(
-                new Compare<ExpressionColumn, string>(
-                    new ExpressionColumn("foo", fromTable),
+                new Compare<ColumnExpression, string>(
+                    new ColumnExpression("foo", fromTable),
                     "@foo"));
             builder.Where(
-                new Compare<ExpressionColumn, IDbDataParameter>(
-                    new ExpressionColumn("bar", fromTable),
+                new Compare<ColumnExpression, IDbDataParameter>(
+                    new ColumnExpression("bar", fromTable),
                     new SqlParameter { ParameterName = "@bar" }));
             Assert.Equal("SELECT * FROM dbo.from f WHERE f.foo = @foo AND f.bar = @bar", builder.ToString());
             Assert.Equal(2, builder.Parameters.Count());
