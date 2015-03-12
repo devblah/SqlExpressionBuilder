@@ -21,8 +21,8 @@ namespace DevBlah.SqlExpressionBuilder.Statements
 
         public override string ToString()
         {
-            return String.Format("ORDER BY {0}",
-                String.Join(", ", _columns.Select(x => String.Format("{0} {1}", x.Key, x.Value.ToString().ToUpper()))));
+            return string.Format("ORDER BY {0}",
+                string.Join(", ", _columns.Select(x => string.Format("{0} {1}", x.Key, x.Value.ToString().ToUpper()))));
         }
     }
 }

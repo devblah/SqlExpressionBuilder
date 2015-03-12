@@ -25,7 +25,7 @@ namespace DevBlah.SqlExpressionBuilder.Statements
 
         public override string ToString()
         {
-            return String.Format("{0} JOIN {1} ON {2}", JoinType.ToString().ToUpper(), Table, On);
+            return string.Format("{0} JOIN {1} ON {2}", JoinType.ToString().ToUpper(), Table, On);
         }
     }
 }

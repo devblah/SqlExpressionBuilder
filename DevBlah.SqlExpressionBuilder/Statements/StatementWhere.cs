@@ -49,9 +49,9 @@ namespace DevBlah.SqlExpressionBuilder.Statements
             }
             else
             {
-                connectionString = String.Join(" AND ", WhereClauses.Select(x => x.Value));
+                connectionString = string.Join(" AND ", WhereClauses.Select(x => x.Value));
             }
-            return String.Format("WHERE {0}", connectionString);
+            return string.Format("WHERE {0}", connectionString);
         }
     }
 }

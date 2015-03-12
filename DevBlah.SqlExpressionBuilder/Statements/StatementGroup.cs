@@ -16,7 +16,7 @@ namespace DevBlah.SqlExpressionBuilder.Statements
 
         public override string ToString()
         {
-            return "GROUP BY " + String.Join(", ", Columns.Distinct());
+            return "GROUP BY " + string.Join(", ", Columns.Distinct());
         }
     }
 }

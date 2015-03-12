@@ -6,7 +6,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
     public class ColumnAndTableFacts
     {
         [Fact]
-        public void TestTableCreationAndToString()
+        public void TableCreationAndToStringFact()
         {
             var table1 = new Table("table");
             var table2 = new Table("table", "t");
@@ -20,11 +20,24 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         }
 
         [Fact]
-        public void TestColumnCreationAndToString()
+        public void ColumnCreationAndToStringFact()
         {
             var table = new Table("table", "t");
             var column = new ColumnExpression("col1", table);
             Assert.Equal("t.col1", column.ToString());
+        }
+
+        [Fact]
+        public void TableGetColumnFact()
+        {
+            var table = new Table("table", "t");
+            ColumnExpression col = table.GetColumn("Id");
+            Assert.Equal("Id", col.Content);
+            Assert.Equal(table, col.Table);
+
+            // check if caching works correctly
+            ColumnExpression cached = table.GetColumn("Id");
+            Assert.Equal(col, cached);
         }
     }
 }

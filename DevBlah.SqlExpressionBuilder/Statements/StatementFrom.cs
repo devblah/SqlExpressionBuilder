@@ -19,7 +19,7 @@ namespace DevBlah.SqlExpressionBuilder.Statements
 
         public override string ToString()
         {
-            return String.Format("FROM {0}", String.Join(", ", Tables));
+            return string.Format("FROM {0}", string.Join(", ", Tables));
         }
     }
 }

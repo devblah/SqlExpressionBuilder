@@ -91,10 +91,10 @@ namespace DevBlah.SqlExpressionBuilder
         {
             if (!(Expected is string) && Expected is IEnumerable)
             {
-                return String.Format(CompareTemplate, Actual, String.Join(", ",
+                return string.Format(CompareTemplate, Actual, string.Join(", ",
                     ((IEnumerable)Expected).Cast<object>()));
             }
-            return String.Format(CompareTemplate, Actual, Expected);
+            return string.Format(CompareTemplate, Actual, Expected);
         }
     }
 }

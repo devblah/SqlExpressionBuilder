@@ -15,17 +15,16 @@ namespace DevBlah.SqlExpressionBuilder
         IEnumerable<IDbDataParameter> Parameters { get; }
 
         /// <summary>
-        /// Specifies how the parts of the where expression are connected to each other
-        /// </summary>
-        string WhereLogicalConnectionString { get; set; }
-
-        /// <summary>
         /// Limits the results of a query
         ///
         /// TODO: make generic for other db types
         /// </summary>
         int Top { get; set; }
 
+        /// <summary>
+        /// Specifies how the parts of the where expression are connected to each other
+        /// </summary>
+        string WhereLogicalConnectionString { get; set; }
         /// <summary>
         /// Binds a IDbDataParameter object to this query
         /// </summary>
@@ -56,8 +55,8 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="name">name of the param</param>
         /// <param name="dbType">Database Type</param>
         /// <param name="value">value to bind</param>
-        /// <param name="suppressWarning">if the exception, when a parameter with the given name couldn't be found
-        ///     should be suppressed</param>
+        /// <param name="suppressWarning">if the exception, which is raised when a parameter with the given name 
+        /// couldn't be found should be suppressed</param>
         /// <returns></returns>
         ISqlExpressionBuilder BindParameter(string name, DbType dbType, object value, bool suppressWarning);
 
@@ -75,7 +74,7 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder Distinct();
 
         /// <summary>
-        ///
+        /// fills a commant with the query representing the current expression state
         /// </summary>
         /// <param name="cmd">SqlCommand to fill</param>
         /// <returns>this instance</returns>
@@ -119,7 +118,7 @@ namespace DevBlah.SqlExpressionBuilder
         string GetSingleSelectString(IExpression select);
 
         /// <summary>
-        /// creates the query string of this builder
+        /// creates the query string from this builder instance
         /// </summary>
         /// <returns>query string</returns>
         string GetSqlString();
@@ -204,7 +203,7 @@ namespace DevBlah.SqlExpressionBuilder
             IEnumerable<string> columns);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
+        /// Adds a INNER JOIN clause for the given table
         /// </summary>
         /// <param name="table">table to join</param>
         /// <param name="on">on clause as string</param>
@@ -212,7 +211,7 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder JoinInner(Table table, string on);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
+        /// Adds a INNER JOIN clause for the given table
         /// </summary>
         /// <param name="table">name of the table to join</param>
         /// <param name="alias">shorthand for the table to join</param>
@@ -221,7 +220,7 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder JoinInner(string table, string alias, string on);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
+        /// Adds a INNER JOIN clause for the given table
         /// </summary>
         /// <param name="table">table to join</param>
         /// <param name="on">on clause</param>
@@ -230,7 +229,7 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
+        /// Adds a INNER JOIN clause for the given table
         /// </summary>
         /// <param name="table">table to join</param>
         /// <param name="on">on clause</param>
@@ -239,7 +238,7 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<IDbDataParameter> parameters);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
+        /// Adds a INNER JOIN clause for the given table
         /// </summary>
         /// <param name="table">table to join</param>
         /// <param name="on">on clause</param>
@@ -250,7 +249,7 @@ namespace DevBlah.SqlExpressionBuilder
             IEnumerable<IDbDataParameter> parameters);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
+        /// Adds a INNER JOIN clause for the given table. First column of the expression comparer references to
         /// the join table, second column to the table which will be referenced by the join.
         /// </summary>
         /// <param name="on">Columns to Join. </param>
@@ -258,13 +257,51 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
+        /// Adds a INNER JOIN clause for the given table. First column of the expression comparer references to
         /// the join table, second column to the table which will be referenced by the join.
         /// </summary>
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
         ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
+
+        /// <summary>
+        /// Adds a INNER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected);
+
+        /// <summary>
+        /// Adds a INNER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected,
+            IEnumerable<string> columns);
+
+        /// <summary>
+        /// Adds a INNER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+
+        /// <summary>
+        /// Adds a INNER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+            IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -330,6 +367,44 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
+        /// Adds a LEFT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected);
+
+        /// <summary>
+        /// Adds a LEFT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected,
+            IEnumerable<string> columns);
+
+        /// <summary>
+        /// Adds a LEFT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+
+        /// <summary>
+        /// Adds a LEFT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+            IEnumerable<string> columns);
+
+        /// <summary>
         /// Adds a JOIN clause for the given table
         /// </summary>
         /// <param name="table">table to join</param>
@@ -393,6 +468,44 @@ namespace DevBlah.SqlExpressionBuilder
         ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
+        /// Adds a OUTER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected);
+
+        /// <summary>
+        /// Adds a OUTER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected,
+            IEnumerable<string> columns);
+
+        /// <summary>
+        /// Adds a OUTER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+
+        /// <summary>
+        /// Adds a OUTER JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+            IEnumerable<string> columns);
+
+        /// <summary>
         /// Adds a JOIN clause for the given table
         /// </summary>
         /// <param name="table">table to join</param>
@@ -454,6 +567,44 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
         ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
+
+        /// <summary>
+        /// Adds a RIGHT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected);
+
+        /// <summary>
+        /// Adds a RIGHT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected,
+            IEnumerable<string> columns);
+
+        /// <summary>
+        /// Adds a RIGHT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+
+        /// <summary>
+        /// Adds a RIGHT JOIN clause for the given table.
+        /// </summary>
+        /// <param name="actual">column of the join table</param>
+        /// <param name="expected">referenced join column</param>
+        /// <param name="compare">how the two columns should be compared</param>
+        /// <param name="columns">list of columns to be selected from the join table</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+            IEnumerable<string> columns);
 
         /// <summary>
         /// adds a column to the order expression
@@ -589,6 +740,57 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="name">the name to identify the clause</param>
         /// <returns>this instance</returns>
         ISqlExpressionBuilder Where(string clause, IEnumerable<IDbDataParameter> parameters, string name = null);
+
+        /// <summary>
+        /// Adds a single comparison between a column and a IDbDataParameter
+        /// </summary>
+        /// <param name="col">column, which should be compared</param>
+        /// <param name="param">IDbParameter with the value, which should be compared</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder Where(ColumnExpression col, IDbDataParameter param);
+
+        /// <summary>
+        /// Adds a single comparison between a column and a IDbDataParameter
+        /// </summary>
+        /// <param name="col">column, which should be compared</param>
+        /// <param name="param">IDbParameter with the value, which should be compared</param>
+        /// <param name="compare">how to compare the two expressions</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder Where(ColumnExpression col, IDbDataParameter param, CompareOperations compare);
+
+        /// <summary>
+        /// Adds a single comparison between a column and a given value, given as a string
+        /// </summary>
+        /// <param name="col">column, which should be compared</param>
+        /// <param name="value">value, which should be compared</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder Where(ColumnExpression col, string value);
+
+        /// <summary>
+        /// Adds a single comparison between a column and a given value, given as a string
+        /// </summary>
+        /// <param name="col">column, which should be compared</param>
+        /// <param name="value">value, which should be compared</param>
+        /// <param name="compare">how to compare the two expressions</param>
+        /// <returns>this instance</returns>
+        ISqlExpressionBuilder Where(ColumnExpression col, string value, CompareOperations compare);
+
+        /// <summary>
+        /// Adds a single comparison between a column and an sql expression
+        /// </summary>
+        /// <param name="col">column, which should be compared</param>
+        /// <param name="expression">expression, which should be compared</param>
+        /// <returns></returns>
+        ISqlExpressionBuilder Where(ColumnExpression col, Expression expression);
+
+        /// <summary>
+        /// Adds a single comparison between a column and an sql expression
+        /// </summary>
+        /// <param name="col">column, which should be compared</param>
+        /// <param name="expression">expression, which should be compared</param>
+        /// <param name="compare">how to compare the two expressions</param>
+        /// <returns></returns>
+        ISqlExpressionBuilder Where(ColumnExpression col, Expression expression, CompareOperations compare);
 
         /// <summary>
         /// Adds a single comparison between a column and a IDbDataParameter

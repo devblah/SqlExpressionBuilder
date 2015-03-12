@@ -1,15 +1,11 @@
-﻿namespace DevBlah.SqlExpressionBuilder.Expressions
+﻿
+namespace DevBlah.SqlExpressionBuilder.Expressions
 {
     /// <summary>
     /// Creates a manual expression for the query
     /// </summary>
     public class Expression : IExpression
     {
-        /// <summary>
-        /// expression content
-        /// </summary>
-        public string Content { get; private set; }
-
         /// <summary>
         /// constructor
         /// </summary>
@@ -19,6 +15,18 @@
             Content = content;
         }
 
+        /// <summary>
+        /// returns a null expression
+        /// </summary>
+        public static NullExpression Null
+        {
+            get { return new NullExpression(); }
+        }
+
+        /// <summary>
+        /// expression content
+        /// </summary>
+        public string Content { get; private set; }
         /// <summary>
         /// creates the actual expression string
         /// </summary>
