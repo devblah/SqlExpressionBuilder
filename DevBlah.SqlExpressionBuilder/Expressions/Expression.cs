@@ -1,5 +1,4 @@
-﻿
-namespace DevBlah.SqlExpressionBuilder.Expressions
+﻿namespace DevBlah.SqlExpressionBuilder.Expressions
 {
     /// <summary>
     /// Creates a manual expression for the query
