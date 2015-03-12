@@ -11,11 +11,14 @@ namespace DevBlah.SqlExpressionBuilder
     /// <summary>
     ///     Template class for using the expression builder with different db types
     /// </summary>
+    /// <typeparam name="TFluent"></typeparam>
     /// <typeparam name="TDbParameter">subtype IDbParameter</typeparam>
-    public abstract class DbExpressionBuilderSelect<TDbParameter> : ISqlExpressionBuilder
+    public abstract class DbSelectExpressionBuilder<TFluent, TDbParameter>
+        : IDbSelectExpressionBuilder<TFluent, TDbParameter>
+        where TFluent : DbSelectExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter, new()
     {
-        private readonly List<IDbDataParameter> _parameters = new List<IDbDataParameter>();
+        private readonly List<TDbParameter> _parameters = new List<TDbParameter>();
         private readonly StatementFrom _stmtFrom = new StatementFrom();
         private readonly List<StatementJoin> _stmtJoin = new List<StatementJoin>();
         private readonly StatementOrder _stmtOrder = new StatementOrder();
@@ -23,7 +26,7 @@ namespace DevBlah.SqlExpressionBuilder
         private readonly StatementWhere _stmtWhere = new StatementWhere();
         private readonly StatementGroup _stmtGroup = new StatementGroup();
 
-        public IEnumerable<IDbDataParameter> Parameters
+        public IEnumerable<TDbParameter> Parameters
         {
             get { return _parameters; }
         }
@@ -40,38 +43,41 @@ namespace DevBlah.SqlExpressionBuilder
             set { _stmtSelect.Top = value; }
         }
 
-        public ISqlExpressionBuilder BindParameter(IDbDataParameter parameter)
+        public TFluent BindParameter(TDbParameter parameter)
         {
-            IDbDataParameter param = _parameters.FirstOrDefault(x => x.ParameterName == parameter.ParameterName);
+            TDbParameter param = _parameters.FirstOrDefault(x => x.ParameterName == parameter.ParameterName);
+            // ReSharper disable once CompareNonConstrainedGenericWithNull
             if (param != null)
             {
                 _parameters.Remove(param);
             }
             _parameters.Add(parameter);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder BindParameter(string name, object value)
+        public TFluent BindParameter(string name, object value)
         {
-            IDbDataParameter param = _parameters.FirstOrDefault(x => x.ParameterName == name);
+            TDbParameter param = _parameters.FirstOrDefault(x => x.ParameterName == name);
+            // ReSharper disable once CompareNonConstrainedGenericWithNull
             if (param == null)
             {
                 throw new InvalidOperationException(
                     string.Format("Parameter with the Name '{0}' couldn't be found.", name));
             }
             param.Value = value;
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder BindParameter(string name, DbType dbType, object value)
+        public TFluent BindParameter(string name, DbType dbType, object value)
         {
             BindParameter(name, dbType, value, false);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder BindParameter(string name, DbType dbType, object value, bool suppressWarning)
+        public TFluent BindParameter(string name, DbType dbType, object value, bool suppressWarning)
         {
-            IDbDataParameter param = _parameters.FirstOrDefault(x => x.ParameterName == name);
+            TDbParameter param = _parameters.FirstOrDefault(x => x.ParameterName == name);
+            // ReSharper disable once CompareNonConstrainedGenericWithNull
             if (param == null && !suppressWarning)
             {
                 throw new InvalidOperationException(
@@ -85,68 +91,69 @@ namespace DevBlah.SqlExpressionBuilder
                 Value = value
             };
 
+
             _parameters.Add(param);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder BindParameters(IEnumerable<IDbDataParameter> parameters)
+        public TFluent BindParameters(IEnumerable<TDbParameter> parameters)
         {
-            foreach (IDbDataParameter param in parameters)
+            foreach (TDbParameter param in parameters)
             {
                 BindParameter(param);
             }
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Distinct()
+        public TFluent Distinct()
         {
             _stmtSelect.Distinct = true;
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder FillCommand(IDbCommand cmd)
+        public TFluent FillCommand(IDbCommand cmd)
         {
-            List<IDbDataParameter> incompleteParameters = Parameters.Where(x => x.Value == null).ToList();
+            List<TDbParameter> incompleteParameters = Parameters.Where(x => x.Value == null).ToList();
             if (incompleteParameters.Count > 0)
             {
                 throw new Exception(string.Format("The Parameters with the names {0} are not bound correctly",
                     string.Join(",", incompleteParameters.Select(x => string.Format("'{0}'", x.ParameterName)))));
             }
             cmd.CommandText = GetSqlString();
-            foreach (IDbDataParameter parameter in Parameters)
+            foreach (TDbParameter parameter in Parameters)
             {
                 cmd.Parameters.Add(parameter);
             }
 
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder From(Table table)
+        public TFluent From(Table table)
         {
             _stmtFrom.Tables.Add(table);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder From(string table)
+        public TFluent From(string table)
         {
             From(new Table(table));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder From(string table, string alias)
+        public TFluent From(string table, string alias)
         {
             From(new Table(table, alias));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder From(Table table, IEnumerable<string> columns)
+        public TFluent From(Table table, IEnumerable<string> columns)
         {
             From(table);
             if (columns != null)
             {
                 _AddColumnsToSelect(columns, table);
             }
-            return this;
+            return (TFluent)this;
         }
 
         public string GetSingleSelectString(IExpression select)
@@ -190,52 +197,52 @@ namespace DevBlah.SqlExpressionBuilder
             return string.Join(" ", expressions);
         }
 
-        public ISqlExpressionBuilder Group(IEnumerable<string> columns)
+        public TFluent Group(IEnumerable<string> columns)
         {
             _stmtGroup.Columns.AddRange(columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on)
+        public TFluent Join(SqlJoinTypes type, Table table, string on)
         {
             _SetParameters(_ParseParameters(on));
             _stmtJoin.Add(new StatementJoin(type, table, on));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, string table, string alias, string on)
+        public TFluent Join(SqlJoinTypes type, string table, string alias, string on)
         {
             Join(type, new Table(table, alias), on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns)
+        public TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns)
         {
             Join(type, table, on);
             if (columns != null)
             {
                 _AddColumnsToSelect(columns, table);
             }
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on,
-            IEnumerable<IDbDataParameter> parameters)
+        public TFluent Join(SqlJoinTypes type, Table table, string on,
+            IEnumerable<TDbParameter> parameters)
         {
             Join(type, table, on);
             BindParameters(parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters)
+        public TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters)
         {
             Join(type, table, on, columns);
             BindParameters(parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on)
+        public TFluent Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on)
         {
             if (!_IsTablePresent(on.Actual.Table))
             {
@@ -245,10 +252,10 @@ namespace DevBlah.SqlExpressionBuilder
             }
 
             _stmtJoin.Add(new StatementJoin(type, on));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on,
+        public TFluent Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns)
         {
             if (columns != null)
@@ -256,318 +263,318 @@ namespace DevBlah.SqlExpressionBuilder
                 _AddColumnsToSelect(columns, on.Expected.Table);
             }
             Join(type, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(Table table, string on)
+        public TFluent JoinInner(Table table, string on)
         {
             Join(SqlJoinTypes.Inner, table, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(string table, string alias, string on)
+        public TFluent JoinInner(string table, string alias, string on)
         {
             Join(SqlJoinTypes.Inner, table, alias, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<string> columns)
+        public TFluent JoinInner(Table table, string on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Inner, table, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinInner(Table table, string on, IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Inner, table, on, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinInner(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Inner, table, on, columns, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on)
+        public TFluent JoinInner(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Inner, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on,
+        public TFluent JoinInner(Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Inner, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected)
+        public TFluent JoinInner(ColumnExpression actual, ColumnExpression expected)
         {
             JoinInner(actual, expected, CompareOperations.Equals, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinInner(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns)
         {
             JoinInner(actual, expected, CompareOperations.Equals, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinInner(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare)
         {
             JoinInner(actual, expected, compare, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinInner(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare,
             IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Inner, new Compare<ColumnExpression, ColumnExpression>(compare, actual, expected),
                 columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(Table table, string on)
+        public TFluent JoinLeft(Table table, string on)
         {
             Join(SqlJoinTypes.Left, table, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(string table, string alias, string on)
+        public TFluent JoinLeft(string table, string alias, string on)
         {
             Join(SqlJoinTypes.Left, table, alias, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(Table table, string on, IEnumerable<string> columns)
+        public TFluent JoinLeft(Table table, string on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Left, table, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(Table table, string on, IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinLeft(Table table, string on, IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Left, table, on, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinLeft(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Left, table, on, columns, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on)
+        public TFluent JoinLeft(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Left, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on,
+        public TFluent JoinLeft(Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Left, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected)
+        public TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected)
         {
             JoinLeft(actual, expected, CompareOperations.Equals, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns)
         {
             JoinLeft(actual, expected, CompareOperations.Equals, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare)
         {
             JoinLeft(actual, expected, compare, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare,
             IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Left, new Compare<ColumnExpression, ColumnExpression>(compare, actual, expected),
                 columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(Table table, string on)
+        public TFluent JoinOuter(Table table, string on)
         {
             Join(SqlJoinTypes.Outer, table, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(string table, string alias, string on)
+        public TFluent JoinOuter(string table, string alias, string on)
         {
             Join(SqlJoinTypes.Outer, table, alias, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(Table table, string on, IEnumerable<string> columns)
+        public TFluent JoinOuter(Table table, string on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Outer, table, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(Table table, string on, IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinOuter(Table table, string on, IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Outer, table, on, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinOuter(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Outer, table, on, columns, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on)
+        public TFluent JoinOuter(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Outer, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on,
+        public TFluent JoinOuter(Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Outer, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected)
+        public TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected)
         {
             JoinOuter(actual, expected, CompareOperations.Equals, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns)
         {
             JoinOuter(actual, expected, CompareOperations.Equals, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare)
         {
             JoinOuter(actual, expected, compare, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Outer, new Compare<ColumnExpression, ColumnExpression>(compare, actual, expected),
                 columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(Table table, string on)
+        public TFluent JoinRight(Table table, string on)
         {
             Join(SqlJoinTypes.Right, table, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(string table, string alias, string on)
+        public TFluent JoinRight(string table, string alias, string on)
         {
             Join(SqlJoinTypes.Right, table, alias, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(Table table, string on, IEnumerable<string> columns)
+        public TFluent JoinRight(Table table, string on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Right, table, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(Table table, string on, IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinRight(Table table, string on, IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Right, table, on, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters)
+        public TFluent JoinRight(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters)
         {
             Join(SqlJoinTypes.Right, table, on, columns, parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on)
+        public TFluent JoinRight(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Right, on);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on,
+        public TFluent JoinRight(Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Right, on, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected)
+        public TFluent JoinRight(ColumnExpression actual, ColumnExpression expected)
         {
             JoinRight(actual, expected, CompareOperations.Equals, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinRight(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns)
         {
             JoinRight(actual, expected, CompareOperations.Equals, columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinRight(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare)
         {
             JoinRight(actual, expected, compare, null);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected,
+        public TFluent JoinRight(ColumnExpression actual, ColumnExpression expected,
             CompareOperations compare, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Right, new Compare<ColumnExpression, ColumnExpression>(compare, actual, expected),
                 columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(string column)
+        public TFluent Order(string column)
         {
             Order(column, OrderOptions.Asc);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(string column, OrderOptions options)
+        public TFluent Order(string column, OrderOptions options)
         {
             Order(column, options, ExpressionOptions.Add);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(string column, ExpressionOptions expOptions)
+        public TFluent Order(string column, ExpressionOptions expOptions)
         {
             Order(column, OrderOptions.Asc, expOptions);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(string column, OrderOptions options, ExpressionOptions expOptions)
+        public TFluent Order(string column, OrderOptions options, ExpressionOptions expOptions)
         {
             ColumnExpression col = _CreateColumnByName(column);
             if (expOptions == ExpressionOptions.Overwrite)
@@ -575,28 +582,28 @@ namespace DevBlah.SqlExpressionBuilder
                 _stmtOrder.Columns.Clear();
             }
             _stmtOrder.Columns.Add(col, options);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(ColumnExpression column)
+        public TFluent Order(ColumnExpression column)
         {
             Order(column, OrderOptions.Asc);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options)
+        public TFluent Order(ColumnExpression column, OrderOptions options)
         {
             Order(column, options, ExpressionOptions.Add);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(ColumnExpression column, ExpressionOptions options)
+        public TFluent Order(ColumnExpression column, ExpressionOptions options)
         {
             Order(column, OrderOptions.Asc, options);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options, ExpressionOptions expOptions)
+        public TFluent Order(ColumnExpression column, OrderOptions options, ExpressionOptions expOptions)
         {
             if (!_IsTablePresent(column.Table))
             {
@@ -607,47 +614,47 @@ namespace DevBlah.SqlExpressionBuilder
                 _stmtOrder.Columns.Clear();
             }
             _stmtOrder.Columns.Add(column, options);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Select(string column)
+        public TFluent Select(string column)
         {
             _stmtSelect.Expressions.Add(_CreateColumnByName(column));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Select(IEnumerable<string> columns)
+        public TFluent Select(IEnumerable<string> columns)
         {
             foreach (string column in columns)
             {
                 Select(column);
             }
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Select(IEnumerable<string> columns, ExpressionOptions option)
+        public TFluent Select(IEnumerable<string> columns, ExpressionOptions option)
         {
             if (option == ExpressionOptions.Overwrite)
             {
                 _stmtSelect.Expressions.Clear();
             }
             Select(columns);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Select(string column, Table table)
+        public TFluent Select(string column, Table table)
         {
             _stmtSelect.Expressions.Add(new ColumnExpression(column, table));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Select(IEnumerable<string> columns, Table table)
+        public TFluent Select(IEnumerable<string> columns, Table table)
         {
             Select(columns, table, ExpressionOptions.Add);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Select(IEnumerable<string> columns, Table table, ExpressionOptions option)
+        public TFluent Select(IEnumerable<string> columns, Table table, ExpressionOptions option)
         {
             if (option == ExpressionOptions.Overwrite)
             {
@@ -657,13 +664,13 @@ namespace DevBlah.SqlExpressionBuilder
             {
                 Select(column, table);
             }
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Select(IExpression expression)
+        public TFluent Select(IExpression expression)
         {
             _stmtSelect.Expressions.Add(expression);
-            return this;
+            return (TFluent)this;
         }
 
         public override string ToString()
@@ -671,7 +678,7 @@ namespace DevBlah.SqlExpressionBuilder
             return GetSqlString();
         }
 
-        public ISqlExpressionBuilder Where(string clause, string name = null)
+        public TFluent Where(string clause, string name = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -679,84 +686,84 @@ namespace DevBlah.SqlExpressionBuilder
             }
             _SetParameters(_ParseParameters(clause));
             _stmtWhere.WhereClauses.Add(name, clause);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(string clause, IEnumerable<IDbDataParameter> parameters, string name = null)
+        public TFluent Where(string clause, IEnumerable<TDbParameter> parameters, string name = null)
         {
             Where(clause, name);
             BindParameters(parameters);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(ColumnExpression col, IDbDataParameter param)
+        public TFluent Where(ColumnExpression col, TDbParameter param)
         {
             Where(col, param, CompareOperations.Equals);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(ColumnExpression col, IDbDataParameter param, CompareOperations compare)
+        public TFluent Where(ColumnExpression col, TDbParameter param, CompareOperations compare)
         {
-            Where(new Compare<ColumnExpression, IDbDataParameter>(compare, col, param));
-            return this;
+            Where(new Compare<ColumnExpression, TDbParameter>(compare, col, param));
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(ColumnExpression col, string value)
+        public TFluent Where(ColumnExpression col, string value)
         {
             Where(col, value, CompareOperations.Equals);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(ColumnExpression col, string value, CompareOperations compare)
+        public TFluent Where(ColumnExpression col, string value, CompareOperations compare)
         {
             Where(new Compare<ColumnExpression, string>(compare, col, value));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(ColumnExpression col, Expression expression)
+        public TFluent Where(ColumnExpression col, Expression expression)
         {
             Where(col, expression, CompareOperations.Equals);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(ColumnExpression col, Expression expression, CompareOperations compare)
+        public TFluent Where(ColumnExpression col, Expression expression, CompareOperations compare)
         {
             Where(new Compare<ColumnExpression, Expression>(compare, col, expression));
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(Compare<ColumnExpression, IDbDataParameter> compare)
+        public TFluent Where(Compare<ColumnExpression, TDbParameter> compare)
         {
             Where(compare.ToString(), compare.Expected.ParameterName);
             BindParameter(compare.Expected);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(Compare<ColumnExpression, string> compare)
+        public TFluent Where(Compare<ColumnExpression, string> compare)
         {
             Where(compare.ToString());
             BindParameter(new TDbParameter { ParameterName = compare.Expected });
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(Compare<ColumnExpression, Expression> compare)
+        public TFluent Where(Compare<ColumnExpression, Expression> compare)
         {
             Where(compare.ToString());
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(Compare<string, IDbDataParameter> compare)
+        public TFluent Where(Compare<string, TDbParameter> compare)
         {
             Where(compare.ToString(), compare.Expected.ParameterName);
             BindParameter(compare.Expected);
-            return this;
+            return (TFluent)this;
         }
 
-        public ISqlExpressionBuilder Where(Compare<string, string> compare)
+        public TFluent Where(Compare<string, string> compare)
         {
             Where(compare.ToString());
             BindParameter(new TDbParameter { ParameterName = compare.Expected });
-            return this;
+            return (TFluent)this;
         }
 
         private void _AddColumnsToSelect(IEnumerable<string> columns, Table table)

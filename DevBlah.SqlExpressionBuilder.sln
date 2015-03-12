@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevBlah.SqlExpressionBuilde
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevBlah.SqlExpressionBuilder.Tests", "DevBlah.SqlExpressionBuilder.Tests\DevBlah.SqlExpressionBuilder.Tests.csproj", "{74FE379F-95D4-4AB6-BEC9-D9ECD48018F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevBlah.SqlExpressionBuilder.MsSql", "DevBlah.SqlExpressionBuilder.MsSql\DevBlah.SqlExpressionBuilder.MsSql.csproj", "{683A759E-F322-42D3-BF67-4A87A0C92791}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{74FE379F-95D4-4AB6-BEC9-D9ECD48018F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74FE379F-95D4-4AB6-BEC9-D9ECD48018F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74FE379F-95D4-4AB6-BEC9-D9ECD48018F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{683A759E-F322-42D3-BF67-4A87A0C92791}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{683A759E-F322-42D3-BF67-4A87A0C92791}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{683A759E-F322-42D3-BF67-4A87A0C92791}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{683A759E-F322-42D3-BF67-4A87A0C92791}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

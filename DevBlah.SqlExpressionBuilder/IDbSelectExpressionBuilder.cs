@@ -7,12 +7,14 @@ namespace DevBlah.SqlExpressionBuilder
     /// <summary>
     /// Interface for creating a implementation for a specific database driver
     /// </summary>
-    public interface ISqlExpressionBuilder
+    public interface IDbSelectExpressionBuilder<out TFluent, TDbParameter>
+        where TFluent : IDbSelectExpressionBuilder<TFluent, TDbParameter>
+        where TDbParameter : IDbDataParameter
     {
         /// <summary>
         /// List of currently assigned db parameters
         /// </summary>
-        IEnumerable<IDbDataParameter> Parameters { get; }
+        IEnumerable<TDbParameter> Parameters { get; }
 
         /// <summary>
         /// Limits the results of a query
@@ -25,12 +27,13 @@ namespace DevBlah.SqlExpressionBuilder
         /// Specifies how the parts of the where expression are connected to each other
         /// </summary>
         string WhereLogicalConnectionString { get; set; }
+
         /// <summary>
-        /// Binds a IDbDataParameter object to this query
+        /// Binds a TDbParameter object to this query
         /// </summary>
-        /// <param name="parameter">IDbDataParameter object</param>
+        /// <param name="parameter">TDbParameter object</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder BindParameter(IDbDataParameter parameter);
+        TFluent BindParameter(TDbParameter parameter);
 
         /// <summary>
         /// Binds a parameter, which is already configured
@@ -38,7 +41,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="name">name of the parameter</param>
         /// <param name="value">value of the parameter</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder BindParameter(string name, object value);
+        TFluent BindParameter(string name, object value);
 
         /// <summary>
         /// Binds a parameter, which isn't configured yet
@@ -47,7 +50,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="dbType">Database Type</param>
         /// <param name="value">value to bind</param>
         /// <returns></returns>
-        ISqlExpressionBuilder BindParameter(string name, DbType dbType, object value);
+        TFluent BindParameter(string name, DbType dbType, object value);
 
         /// <summary>
         /// Binds a parameter, which isn't configured yet
@@ -58,41 +61,41 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="suppressWarning">if the exception, which is raised when a parameter with the given name 
         /// couldn't be found should be suppressed</param>
         /// <returns></returns>
-        ISqlExpressionBuilder BindParameter(string name, DbType dbType, object value, bool suppressWarning);
+        TFluent BindParameter(string name, DbType dbType, object value, bool suppressWarning);
 
         /// <summary>
-        /// Binds a bunch of IDbDataParameter objects to this query
+        /// Binds a bunch of TDbParameter objects to this query
         /// </summary>
-        /// <param name="parameters">Liste von IDbDataParametern</param>
+        /// <param name="parameters">Liste von TDbParametern</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder BindParameters(IEnumerable<IDbDataParameter> parameters);
+        TFluent BindParameters(IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds the distinct keyword to the query, to avoid getting duplicate rows
         /// </summary>
         /// <returns></returns>
-        ISqlExpressionBuilder Distinct();
+        TFluent Distinct();
 
         /// <summary>
         /// fills a commant with the query representing the current expression state
         /// </summary>
         /// <param name="cmd">SqlCommand to fill</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder FillCommand(IDbCommand cmd);
+        TFluent FillCommand(IDbCommand cmd);
 
         /// <summary>
         /// Adds a table into the FROM clause
         /// </summary>
         /// <param name="table">Tableobject</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder From(Table table);
+        TFluent From(Table table);
 
         /// <summary>
         /// Adds a table into the FROM clause
         /// </summary>
         /// <param name="table">name of the table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder From(string table);
+        TFluent From(string table);
 
         /// <summary>
         /// Adds a table into the FROM clause
@@ -100,7 +103,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">name of the table</param>
         /// <param name="alias">shorthand for the table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder From(string table, string alias);
+        TFluent From(string table, string alias);
 
         /// <summary>
         /// Adds a table into the FROM clause
@@ -108,7 +111,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">object of the table</param>
         /// <param name="columns">list of column names, which should be selected (without table alias)</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder From(Table table, IEnumerable<string> columns);
+        TFluent From(Table table, IEnumerable<string> columns);
 
         /// <summary>
         /// gives the query string to count the sets
@@ -128,7 +131,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="columns">all columns which should be grouped</param>
         /// <returns></returns>
-        ISqlExpressionBuilder Group(IEnumerable<string> columns);
+        TFluent Group(IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -137,7 +140,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on);
+        TFluent Join(SqlJoinTypes type, Table table, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -147,7 +150,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="alias">shorthand for the table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, string table, string alias, string on);
+        TFluent Join(SqlJoinTypes type, string table, string alias, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -157,7 +160,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="columns">list of columns to select</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns);
+        TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -167,8 +170,8 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on,
-            IEnumerable<IDbDataParameter> parameters);
+        TFluent Join(SqlJoinTypes type, Table table, string on,
+            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -179,8 +182,8 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of columns to select</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters);
+        TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -189,7 +192,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="type">type of the join</param>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on);
+        TFluent Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -199,7 +202,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on,
+        TFluent Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -208,7 +211,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Table table, string on);
+        TFluent JoinInner(Table table, string on);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table
@@ -217,7 +220,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="alias">shorthand for the table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(string table, string alias, string on);
+        TFluent JoinInner(string table, string alias, string on);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table
@@ -226,7 +229,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="columns">list of columns to select</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<string> columns);
+        TFluent JoinInner(Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table
@@ -235,7 +238,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinInner(Table table, string on, IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table
@@ -245,8 +248,8 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of columns to select</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinInner(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table. First column of the expression comparer references to
@@ -254,7 +257,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on);
+        TFluent JoinInner(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table. First column of the expression comparer references to
@@ -263,7 +266,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
+        TFluent JoinInner(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table.
@@ -271,7 +274,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="actual">column of the join table</param>
         /// <param name="expected">referenced join column</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected);
+        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table.
@@ -280,7 +283,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected,
+        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -290,7 +293,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="compare">how the two columns should be compared</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table.
@@ -300,7 +303,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="compare">how the two columns should be compared</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -309,7 +312,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Table table, string on);
+        TFluent JoinLeft(Table table, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -318,7 +321,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="alias">shorthand for the table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(string table, string alias, string on);
+        TFluent JoinLeft(string table, string alias, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -327,7 +330,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="columns">list of columns to select</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Table table, string on, IEnumerable<string> columns);
+        TFluent JoinLeft(Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -336,7 +339,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Table table, string on, IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinLeft(Table table, string on, IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -346,8 +349,8 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of columns to select</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinLeft(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -355,7 +358,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on);
+        TFluent JoinLeft(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -364,7 +367,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
+        TFluent JoinLeft(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a LEFT JOIN clause for the given table.
@@ -372,7 +375,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="actual">column of the join table</param>
         /// <param name="expected">referenced join column</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected);
+        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected);
 
         /// <summary>
         /// Adds a LEFT JOIN clause for the given table.
@@ -381,7 +384,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected,
+        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -391,7 +394,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="compare">how the two columns should be compared</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
 
         /// <summary>
         /// Adds a LEFT JOIN clause for the given table.
@@ -401,7 +404,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="compare">how the two columns should be compared</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -410,7 +413,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Table table, string on);
+        TFluent JoinOuter(Table table, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -419,7 +422,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="alias">shorthand for the table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(string table, string alias, string on);
+        TFluent JoinOuter(string table, string alias, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -428,7 +431,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="columns">list of columns to select</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Table table, string on, IEnumerable<string> columns);
+        TFluent JoinOuter(Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -437,7 +440,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Table table, string on, IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinOuter(Table table, string on, IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -447,8 +450,8 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of columns to select</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinOuter(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -456,7 +459,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on);
+        TFluent JoinOuter(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -465,7 +468,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
+        TFluent JoinOuter(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a OUTER JOIN clause for the given table.
@@ -473,7 +476,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="actual">column of the join table</param>
         /// <param name="expected">referenced join column</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected);
+        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected);
 
         /// <summary>
         /// Adds a OUTER JOIN clause for the given table.
@@ -482,7 +485,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected,
+        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -492,7 +495,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="compare">how the two columns should be compared</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
 
         /// <summary>
         /// Adds a OUTER JOIN clause for the given table.
@@ -502,7 +505,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="compare">how the two columns should be compared</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -511,7 +514,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Table table, string on);
+        TFluent JoinRight(Table table, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -520,7 +523,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="alias">shorthand for the table to join</param>
         /// <param name="on">on clause as string</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(string table, string alias, string on);
+        TFluent JoinRight(string table, string alias, string on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -529,7 +532,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="columns">list of columns to select</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Table table, string on, IEnumerable<string> columns);
+        TFluent JoinRight(Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -538,7 +541,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Table table, string on, IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinRight(Table table, string on, IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table
@@ -548,8 +551,8 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of columns to select</param>
         /// <param name="parameters">list of parameters in this context</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<IDbDataParameter> parameters);
+        TFluent JoinRight(Table table, string on, IEnumerable<string> columns,
+            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -557,7 +560,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="on">Columns to Join. </param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on);
+        TFluent JoinRight(Compare<ColumnExpression, ColumnExpression> on);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -566,7 +569,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="on">on clause for the join as compare expression</param>
         /// <param name="columns">list of column names, which should be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
+        TFluent JoinRight(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
 
         /// <summary>
         /// Adds a RIGHT JOIN clause for the given table.
@@ -574,7 +577,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="actual">column of the join table</param>
         /// <param name="expected">referenced join column</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected);
+        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected);
 
         /// <summary>
         /// Adds a RIGHT JOIN clause for the given table.
@@ -583,7 +586,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected,
+        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -593,7 +596,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expected">referenced join column</param>
         /// <param name="compare">how the two columns should be compared</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
+        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
 
         /// <summary>
         /// Adds a RIGHT JOIN clause for the given table.
@@ -603,7 +606,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="compare">how the two columns should be compared</param>
         /// <param name="columns">list of columns to be selected from the join table</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
+        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
             IEnumerable<string> columns);
 
         /// <summary>
@@ -611,7 +614,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="column">name of the column, which should be ordered</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(string column);
+        TFluent Order(string column);
 
         /// <summary>
         /// adds a column to the order expression
@@ -619,7 +622,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">name of the column, which should be ordered</param>
         /// <param name="options">direction of the order</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(string column, OrderOptions options);
+        TFluent Order(string column, OrderOptions options);
 
         /// <summary>
         /// adds a column to the order expression
@@ -627,7 +630,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">name of the column, which should be ordered</param>
         /// <param name="expOptions">expression option</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(string column, ExpressionOptions expOptions);
+        TFluent Order(string column, ExpressionOptions expOptions);
 
         /// <summary>
         /// adds a column to the order expression
@@ -636,14 +639,14 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="options">direction of the order</param>
         /// <param name="expOptions">expression option</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(string column, OrderOptions options, ExpressionOptions expOptions);
+        TFluent Order(string column, OrderOptions options, ExpressionOptions expOptions);
 
         /// <summary>
         /// adds a column to the order expression
         /// </summary>
         /// <param name="column">column, which should be ordered</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ColumnExpression column);
+        TFluent Order(ColumnExpression column);
 
         /// <summary>
         /// adds a column to the order expression
@@ -651,7 +654,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">column, which should be ordered</param>
         /// <param name="options">direction of the order</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options);
+        TFluent Order(ColumnExpression column, OrderOptions options);
 
         /// <summary>
         /// adds a column to the order expression
@@ -659,7 +662,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">column, which should be ordered</param>
         /// <param name="options">expression option</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ColumnExpression column, ExpressionOptions options);
+        TFluent Order(ColumnExpression column, ExpressionOptions options);
 
         /// <summary>
         /// adds a column to the order expression
@@ -668,21 +671,21 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="options">direction of the order</param>
         /// <param name="expOptions">expression option</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Order(ColumnExpression column, OrderOptions options, ExpressionOptions expOptions);
+        TFluent Order(ColumnExpression column, OrderOptions options, ExpressionOptions expOptions);
 
         /// <summary>
         /// Selects a column from the default table
         /// </summary>
         /// <param name="column">name of the column which shoul be selected</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Select(string column);
+        TFluent Select(string column);
 
         /// <summary>
         /// Selects a bunch of columns from the default table
         /// </summary>
         /// <param name="columns">array of columnnames</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Select(IEnumerable<string> columns);
+        TFluent Select(IEnumerable<string> columns);
 
         /// <summary>
         /// Selects a bunch of columns from the default table
@@ -690,7 +693,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">array of columnnames</param>
         /// <param name="option">options for adding the columns</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Select(IEnumerable<string> columns, ExpressionOptions option);
+        TFluent Select(IEnumerable<string> columns, ExpressionOptions option);
 
         /// <summary>
         /// Selects a column from the given table
@@ -698,7 +701,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="column">name of the column, which should be selected</param>
         /// <param name="table">table object where the column should be selected from</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Select(string column, Table table);
+        TFluent Select(string column, Table table);
 
         /// <summary>
         /// Selects a bunch of columns from the given table
@@ -706,7 +709,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">names of the columns, which should be selected</param>
         /// <param name="table"> object where the column should be selected from</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Select(IEnumerable<string> columns, Table table);
+        TFluent Select(IEnumerable<string> columns, Table table);
 
         /// <summary>
         /// Selects a bunch of columns from the given table
@@ -715,14 +718,14 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="table">table object where the column should be selected from</param>
         /// <param name="option">options for the expression</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Select(IEnumerable<string> columns, Table table, ExpressionOptions option);
+        TFluent Select(IEnumerable<string> columns, Table table, ExpressionOptions option);
 
         /// <summary>
         /// Selects an expression with the given alias
         /// </summary>
         /// <param name="expression">expression obj</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Select(IExpression expression);
+        TFluent Select(IExpression expression);
 
         /// <summary>
         /// Adds a clause to where statement
@@ -730,7 +733,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="clause">where clause to add</param>
         /// <param name="name">the name to identify the clause</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(string clause, string name = null);
+        TFluent Where(string clause, string name = null);
 
         /// <summary>
         /// Adds a clause and their parameters to where statement
@@ -739,24 +742,24 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="parameters">array of parameters of this clause</param>
         /// <param name="name">the name to identify the clause</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(string clause, IEnumerable<IDbDataParameter> parameters, string name = null);
+        TFluent Where(string clause, IEnumerable<TDbParameter> parameters, string name = null);
 
         /// <summary>
-        /// Adds a single comparison between a column and a IDbDataParameter
+        /// Adds a single comparison between a column and a TDbParameter
         /// </summary>
         /// <param name="col">column, which should be compared</param>
         /// <param name="param">IDbParameter with the value, which should be compared</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(ColumnExpression col, IDbDataParameter param);
+        TFluent Where(ColumnExpression col, TDbParameter param);
 
         /// <summary>
-        /// Adds a single comparison between a column and a IDbDataParameter
+        /// Adds a single comparison between a column and a TDbParameter
         /// </summary>
         /// <param name="col">column, which should be compared</param>
         /// <param name="param">IDbParameter with the value, which should be compared</param>
         /// <param name="compare">how to compare the two expressions</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(ColumnExpression col, IDbDataParameter param, CompareOperations compare);
+        TFluent Where(ColumnExpression col, TDbParameter param, CompareOperations compare);
 
         /// <summary>
         /// Adds a single comparison between a column and a given value, given as a string
@@ -764,7 +767,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="col">column, which should be compared</param>
         /// <param name="value">value, which should be compared</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(ColumnExpression col, string value);
+        TFluent Where(ColumnExpression col, string value);
 
         /// <summary>
         /// Adds a single comparison between a column and a given value, given as a string
@@ -773,7 +776,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="value">value, which should be compared</param>
         /// <param name="compare">how to compare the two expressions</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(ColumnExpression col, string value, CompareOperations compare);
+        TFluent Where(ColumnExpression col, string value, CompareOperations compare);
 
         /// <summary>
         /// Adds a single comparison between a column and an sql expression
@@ -781,7 +784,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="col">column, which should be compared</param>
         /// <param name="expression">expression, which should be compared</param>
         /// <returns></returns>
-        ISqlExpressionBuilder Where(ColumnExpression col, Expression expression);
+        TFluent Where(ColumnExpression col, Expression expression);
 
         /// <summary>
         /// Adds a single comparison between a column and an sql expression
@@ -790,41 +793,41 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="expression">expression, which should be compared</param>
         /// <param name="compare">how to compare the two expressions</param>
         /// <returns></returns>
-        ISqlExpressionBuilder Where(ColumnExpression col, Expression expression, CompareOperations compare);
+        TFluent Where(ColumnExpression col, Expression expression, CompareOperations compare);
 
         /// <summary>
-        /// Adds a single comparison between a column and a IDbDataParameter
+        /// Adds a single comparison between a column and a TDbParameter
         /// </summary>
         /// <param name="compare">compare instance</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(Compare<ColumnExpression, IDbDataParameter> compare);
+        TFluent Where(Compare<ColumnExpression, TDbParameter> compare);
 
         /// <summary>
-        /// Adds a single comparison between a column and a IDbDataParameter, given as a string
+        /// Adds a single comparison between a column and a TDbParameter, given as a string
         /// </summary>
         /// <param name="compare"></param>
         /// <returns></returns>
-        ISqlExpressionBuilder Where(Compare<ColumnExpression, string> compare);
+        TFluent Where(Compare<ColumnExpression, string> compare);
 
         /// <summary>
         /// Adds a single comparison between a column and an sql expression
         /// </summary>
         /// <param name="compare"></param>
         /// <returns></returns>
-        ISqlExpressionBuilder Where(Compare<ColumnExpression, Expression> compare);
+        TFluent Where(Compare<ColumnExpression, Expression> compare);
 
         /// <summary>
-        /// Adds a single comparison between a column and a IDbDataParameter
+        /// Adds a single comparison between a column and a TDbParameter
         /// </summary>
         /// <param name="compare">compare instance</param>
         /// <returns>this instance</returns>
-        ISqlExpressionBuilder Where(Compare<string, IDbDataParameter> compare);
+        TFluent Where(Compare<string, TDbParameter> compare);
 
         /// <summary>
-        /// Adds a single comparison between a column and a IDbDataParameter, given as a string
+        /// Adds a single comparison between a column and a TDbParameter, given as a string
         /// </summary>
         /// <param name="compare"></param>
         /// <returns></returns>
-        ISqlExpressionBuilder Where(Compare<string, string> compare);
+        TFluent Where(Compare<string, string> compare);
     }
 }

@@ -4,16 +4,17 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using DevBlah.SqlExpressionBuilder.Expressions;
+using DevBlah.SqlExpressionBuilder.MsSql;
 using Xunit;
 
 namespace DevBlah.SqlExpressionBuilder.Tests
 {
-    public class ApiFacts
+    public class SelectExpressionBuilderFacts
     {
         [Fact]
         public void BindParameter_BindAndRebindParameterFact()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From("table", "t");
             builder.Where("t.foo = @foo");
 
@@ -38,7 +39,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         [Fact]
         public void BindParameter_DoesNotThrowOnParameterFoundFact()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From("table", "t");
 
             builder.Where("t.foo = @foo");
@@ -49,7 +50,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         [Fact]
         public void BindParameter_DoesNotThrowOnSupressedWarningFact()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From("table", "t");
 
             Assert.DoesNotThrow(() => builder.BindParameter("@foo", DbType.Int32, 12, true));
@@ -58,7 +59,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         [Fact]
         public void BindParameter_ThrowsOnParameterNotFoundFact()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From("table", "t");
 
             Assert.Throws<InvalidOperationException>(() => builder.BindParameter("@foo", DbType.Int32, 12));
@@ -71,7 +72,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         {
             var command = new SqlCommand();
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             var fromTable = new Table("table", "t");
             var param = new SqlParameter("@bla", SqlDbType.VarChar) { Value = 5 };
 
@@ -91,7 +92,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         {
             var command = new SqlCommand();
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             var fromTable = new Table("table", "t");
             var param = new SqlParameter("@bla", SqlDbType.VarChar);
 
@@ -104,7 +105,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         [Fact]
         public void GetSqlString_ThrowsIfFromStatementMissing()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
 
             Assert.Throws<InvalidOperationException>(() => builder.GetSqlString());
         }
@@ -112,7 +113,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         [Fact]
         public void GroupFacts()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             var fromTable = new Table("table", "t");
             var joinTable = new Table("join", "j");
 
@@ -146,7 +147,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var joinTable9 = new Table("dbo.join9", "j9");
             var joinTableA = new Table("dbo.joinA", "jA");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.JoinInner(joinTable1, "f.Id = j1.f_Id");
             builder.JoinInner("dbo.join2", "j2", "j1.Id = j2.j1_Id");
@@ -207,7 +208,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var joinTable9 = new Table("dbo.join9", "j9");
             var joinTableA = new Table("dbo.joinA", "jA");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.JoinLeft(joinTable1, "f.Id = j1.f_Id");
             builder.JoinLeft("dbo.join2", "j2", "j1.Id = j2.j1_Id");
@@ -268,7 +269,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var joinTable9 = new Table("dbo.join9", "j9");
             var joinTableA = new Table("dbo.joinA", "jA");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.JoinOuter(joinTable1, "f.Id = j1.f_Id");
             builder.JoinOuter("dbo.join2", "j2", "j1.Id = j2.j1_Id");
@@ -322,7 +323,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var joinTable1 = new Table("join1", "j1");
 
             // Works
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
 
             Assert.DoesNotThrow(() => builder.JoinInner(fromTable.GetColumn("bla"), joinTable1.GetColumn("bla")));
@@ -335,7 +336,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var joinTable1 = new Table("join1", "j1");
             var joinTable2 = new Table("join2", "j2");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
 
             builder.From(fromTable)
                 .JoinInner(fromTable.GetColumn("bla"), joinTable1.GetColumn("bla"));
@@ -349,7 +350,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var fromTable = new Table("from", "f");
             var joinTable1 = new Table("join1", "j1");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
 
             // first table has to be the referenced table
@@ -371,7 +372,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var joinTable9 = new Table("dbo.join9", "j9");
             var joinTableA = new Table("dbo.joinA", "jA");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.JoinRight(joinTable1, "f.Id = j1.f_Id");
             builder.JoinRight("dbo.join2", "j2", "j1.Id = j2.j1_Id");
@@ -424,7 +425,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var fromTable1 = new Table("from1", "f1");
             var fromTable2 = new Table("from2", "f2");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder
                 .From(fromTable1)
                 .From(fromTable2, new[] { "col1", "col2", "col3" })
@@ -442,7 +443,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var fromTable = new Table("dbo.from", "f");
             var joinTable = new Table("dbo.join", "j");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder
                 .From(fromTable)
                 .Order("bla")
@@ -453,7 +454,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             // Fails
             bool throws = false;
-            builder = new SqlExpressionBuilderSelect();
+            builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable).Order("bla");
             try
             {
@@ -485,7 +486,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             // Fails
             throws = false;
-            builder = new SqlExpressionBuilderSelect();
+            builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable).Order("bla");
             try
             {
@@ -504,7 +505,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var fromTable = new Table("dbo.from", "f");
             var joinTable = new Table("dbo.join", "j");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder
                 .From(fromTable)
                 .Select("bla")
@@ -543,7 +544,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         [Fact]
         public void SelectStatement_ThrowsIfNoDefaultTableSelected()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
 
             Assert.Throws<InvalidOperationException>(() => builder.Select("foo"));
         }
@@ -551,7 +552,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         [Fact]
         public void SelectStatement_ThrowsIfWrongColumnName()
         {
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From("table", "t");
 
             Assert.Throws<ArgumentException>(() => builder.Select("t.b.foo"));
@@ -562,7 +563,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         {
             var fromTable = new Table("from", "f");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
 
             Assert.Equal("SELECT * FROM from f", builder.ToString());
@@ -583,7 +584,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var zipCityCol = new AliasedExpression<Expression>(
                 new Expression("CONCAT(Zip, City)"), "ZipCity");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder
                 .From(fromTable)
                 .Select(addressCol)
@@ -591,7 +592,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 .Where(
                     new Compare<string, string>(addressCol.Alias, "@address"));
             builder.Where(
-                new Compare<string, IDbDataParameter>(zipCityCol.Alias, new SqlParameter { ParameterName = "@zc" }));
+                new Compare<string, SqlParameter>(zipCityCol.Alias, new SqlParameter { ParameterName = "@zc" }));
             Assert.Equal(
                 "SELECT CONCAT(Street, Number) AS Address, CONCAT(Zip, City) AS ZipCity FROM dbo.from f " +
                     "WHERE Address = @address AND ZipCity = @zc", builder.ToString());
@@ -602,7 +603,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         public void WhereQuery_ComparerFact()
         {
             var fromTable = new Table("dbo.from", "f");
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.Where(fromTable.GetColumn("foo"), "@foo");
             builder.Where(fromTable.GetColumn("bar"), new SqlParameter { ParameterName = "@bar" });
@@ -621,7 +622,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         {
             var fromTable = new Table("dbo.from", "f");
 
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.Where("bla = @bla OR blubb = @bla");
             Assert.Equal("SELECT * FROM dbo.from f WHERE bla = @bla OR blubb = @bla", builder.ToString());
@@ -632,7 +633,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         public void WhereQuery_SimpleWithParameterFact()
         {
             var fromTable = new Table("dbo.from", "f");
-            var builder = new SqlExpressionBuilderSelect();
+            var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.Where("bla = @bla OR blubb = @bla", new[] { new SqlParameter { ParameterName = "@bla" } });
             Assert.Equal("SELECT * FROM dbo.from f WHERE bla = @bla OR blubb = @bla", builder.ToString());
