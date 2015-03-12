@@ -26,26 +26,19 @@ ISqlExpressionBuilder builder = new SqlExpressionBuilderSelect();
 
 // products
 var productsTable = new Table("dbo.Products", "p");
-ColumnExpression productsTablePk = productsTable.GetColumn("Id");
 builder.From(productsTable);
 builder.Select(new[] { "Id", "Name" }, productsTable);
 
 // categories
 var categoriesTable = new Table("dbo.Categories", "c");
 ColumnExpression categoryIdPk = categoriesTable.GetColumn("Id");
-builder.JoinInner(new Compare<ColumnExpression, ColumnExpression>(
-    productsTable.GetColumn("categoryId"),
-    categoryIdPk));
-builder.Where(new Compare<ColumnExpression, IDbDataParameter>(
-    CompareOperations.GreaterThan,
-    categoryIdPk,
-    new SqlParameter("@categoryId", SqlDbType.Int) { Value = 5 }));
+builder.JoinInner(productsTable.GetColumn("categoryId"), categoryIdPk);
+builder.Where(categoryIdPk, new SqlParameter("@categoryId", SqlDbType.Int) {Value = 5},
+    CompareOperations.GreaterThan);
 
 // stock
 var stockTable = new Table("dbo.stock", "s");
-builder.JoinLeft(new Compare<ColumnExpression, ColumnExpression>(
-    productsTablePk,
-    stockTable.GetColumn("productId")));
+builder.JoinLeft(productsTable.GetColumn("Id"), stockTable.GetColumn("productId"));
 builder.Select(new[] { "Count", "Sold" }, stockTable);
 ````
 results in:
@@ -58,15 +51,18 @@ WHERE c.Id > @categoryId
 ````
 
 ## Where do I need this?
-It is useful if you need to adjust your SQL query by parameters. This could be a very complex scenario, where the this library helps you to keep your code clean and structured.
+It is useful if you need to adjust your SQL query by parameters. This could be a very complex scenario, where this library helps you to keep your code clean and structured.
 
 ## Only MS SQL?
 As you can see in the advanced example, the Sql Expression Builder is not coupled to a specific implementation, although it was only used with MS SQL and SybaseSQL yet. If you want to use the builder for other database implementations, feel free to contribute...
 
 ## ToDos
- - Enhance Documentation
- - Build a generic solution for query limiting (Ideas?)
- - Add More Api Methods for easier usage
+  - Add Builder for Insert/Delete/Update
+  - Create a generic solution for query limiting (Ideas?)
+  - Add More Api Methods for easier usage
+
+## Documentation
+The library is really self-explanatory. For more examples look at the Tests.
 
 ## More?
 coming soon...
