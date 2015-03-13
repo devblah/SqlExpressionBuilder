@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevBlah.SqlExpressionBuilde
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevBlah.SqlExpressionBuilder.MsSql", "DevBlah.SqlExpressionBuilder.MsSql\DevBlah.SqlExpressionBuilder.MsSql.csproj", "{683A759E-F322-42D3-BF67-4A87A0C92791}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevBlah.SqlExpressionBuilder.ObjectMap", "DevBlah.SqlExpressionBuilder.ObjectMap\DevBlah.SqlExpressionBuilder.ObjectMap.csproj", "{F10F2384-A5E5-42FE-9F8D-EADC68BC0F48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{683A759E-F322-42D3-BF67-4A87A0C92791}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{683A759E-F322-42D3-BF67-4A87A0C92791}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{683A759E-F322-42D3-BF67-4A87A0C92791}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F10F2384-A5E5-42FE-9F8D-EADC68BC0F48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F10F2384-A5E5-42FE-9F8D-EADC68BC0F48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F10F2384-A5E5-42FE-9F8D-EADC68BC0F48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F10F2384-A5E5-42FE-9F8D-EADC68BC0F48}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

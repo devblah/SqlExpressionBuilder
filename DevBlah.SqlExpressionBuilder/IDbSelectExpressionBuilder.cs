@@ -77,7 +77,7 @@ namespace DevBlah.SqlExpressionBuilder
         TFluent Distinct();
 
         /// <summary>
-        /// fills a commant with the query representing the current expression state
+        /// fills a command with the query representing the current expression state
         /// </summary>
         /// <param name="cmd">SqlCommand to fill</param>
         /// <returns>this instance</returns>

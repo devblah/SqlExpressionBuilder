@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using DevBlah.SqlExpressionBuilder.Expressions;
+using DevBlah.SqlExpressionBuilder.Mapping;
 
-namespace DevBlah.SqlExpressionBuilder.Mapping
+namespace DevBlah.SqlExpressionBuilder.ObjectMap.Mapper
 {
     public class MappingSet<TPoco>
     {
@@ -13,7 +11,9 @@ namespace DevBlah.SqlExpressionBuilder.Mapping
 
         public MappingSet<TPoco> Add<TProperty>(Expression<Func<TPoco, TProperty>> expr, string dbColumnName)
         {
-            _items.Add();
+            //_items.Add();
+
+            return this;
         }
     }
 }

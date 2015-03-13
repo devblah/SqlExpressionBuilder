@@ -45,16 +45,18 @@
     <Compile Include="DbUpdateExpressionBuilder.cs" />
     <Compile Include="Expressions\AliasedExpression.cs" />
     <Compile Include="Compare.cs" />
-    <Compile Include="DbExpressionBuilderSelect.cs" />
+    <Compile Include="DbSelectExpressionBuilder.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Expressions\Expression.cs" />
     <Compile Include="Expressions\ColumnExpression.cs" />
     <Compile Include="Expressions\CountExpression.cs" />
     <Compile Include="Expressions\NullExpression.cs" />
     <Compile Include="Expressions\IExpression.cs" />
+    <Compile Include="IDbInsertExpressionBuilder.cs" />
     <Compile Include="IDbSelectExpressionBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DbInsertExpressionBuilder.cs" />
+    <Compile Include="Meta\ColumnSet.cs" />
     <Compile Include="Statements\StatementBase.cs" />
     <Compile Include="Statements\StatementFrom.cs" />
     <Compile Include="Statements\StatementGroup.cs" />
@@ -63,6 +65,10 @@
     <Compile Include="Statements\StatementSelect.cs" />
     <Compile Include="Statements\StatementWhere.cs" />
     <Compile Include="Table.cs" />
+    <Compile Include="Meta\Row.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
