@@ -5,7 +5,8 @@ namespace DevBlah.SqlExpressionBuilder.MsSql
 {
     public class MsSqlInsertExpressionBuilder : DbInsertExpressionBuilder<MsSqlInsertExpressionBuilder, SqlParameter>
     {
-        public MsSqlInsertExpressionBuilder(string tableName, ColumnSet columns, bool ignoreMissingColumns = false) : base(tableName, columns, ignoreMissingColumns)
-        {}
+        public MsSqlInsertExpressionBuilder(string tableName, ColumnSet columns, bool ignoreMissingColumns = false)
+            : base(tableName, columns, ignoreMissingColumns)
+        { }
     }
 }

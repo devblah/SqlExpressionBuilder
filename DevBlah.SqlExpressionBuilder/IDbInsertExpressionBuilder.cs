@@ -4,7 +4,7 @@ using DevBlah.SqlExpressionBuilder.Meta;
 
 namespace DevBlah.SqlExpressionBuilder
 {
-    interface IDbInsertExpressionBuilder<out TFluent, out TDbParameter>
+    public interface IDbInsertExpressionBuilder<out TFluent, out TDbParameter>
         where TFluent : IDbInsertExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter
     {
@@ -23,6 +23,12 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="row"></param>
         void AddRow(IDictionary<string, object> row);
+
+        /// <summary>
+        /// Adds a row to the current insert builder
+        /// </summary>
+        /// <param name="row"></param>
+        void AddRow(dynamic row);
 
         /// <summary>
         /// fills a command with the query representing the current expression state

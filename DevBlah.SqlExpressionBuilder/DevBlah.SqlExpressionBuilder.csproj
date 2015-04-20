@@ -52,6 +52,7 @@
     <Compile Include="Expressions\CountExpression.cs" />
     <Compile Include="Expressions\NullExpression.cs" />
     <Compile Include="Expressions\IExpression.cs" />
+    <Compile Include="Extensions\IDbConnectionExtensions.cs" />
     <Compile Include="IDbInsertExpressionBuilder.cs" />
     <Compile Include="IDbSelectExpressionBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -68,7 +69,10 @@
     <Compile Include="Meta\Row.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Extensions\" />
+    <ProjectReference Include="..\..\DevBlah.DotNetToolkit\DevBlah.DotNetToolkit\DevBlah.DotNetToolkit.csproj">
+      <Project>{eef3293d-bfc0-49cb-bcb0-1b0e98fd3f25}</Project>
+      <Name>DevBlah.DotNetToolkit</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

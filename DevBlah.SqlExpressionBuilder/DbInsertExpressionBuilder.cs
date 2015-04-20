@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using DevBlah.DotNetToolkit.System.Extensions;
 using DevBlah.SqlExpressionBuilder.Meta;
 
 namespace DevBlah.SqlExpressionBuilder
@@ -49,6 +50,17 @@ namespace DevBlah.SqlExpressionBuilder
             }
 
             _rows.Add(row);
+        }
+
+        public void AddRow(object row)
+        {
+            var dict = row.ToDictionary();
+            if (dict == null)
+            {
+                throw new ArgumentException("The dynamic object isn't a valid row.");
+            }
+
+            AddRow(dict);
         }
 
         public TFluent FillCommand(IDbCommand cmd)
