@@ -55,10 +55,21 @@
     <Compile Include="Extensions\IDbConnectionExtensions.cs" />
     <Compile Include="IDbInsertExpressionBuilder.cs" />
     <Compile Include="IDbSelectExpressionBuilder.cs" />
+    <Compile Include="IDbUpdateExpressionBuilder.cs" />
+    <Compile Include="Interfaces\IWhereStatement.cs" />
+    <Compile Include="Meta\DbParameter.cs" />
+    <Compile Include="Mixins\IWhereStatementFacadeMixinExtensions.cs" />
+    <Compile Include="Mixins\IWhereStatementFacadeMixin.cs" />
+    <Compile Include="Statements\RowSet.cs" />
+    <Compile Include="Statements\StatementBase.cs" />
+    <Compile Include="Statements\Where\IWhereSubSet.cs" />
+    <Compile Include="Statements\WhereSet.cs" />
+    <Compile Include="Statements\Where\WhereSingleClause.cs" />
+    <Compile Include="Statements\Where\WhereSubSet.cs" />
+    <Compile Include="Statements\Where\WhereValueSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DbInsertExpressionBuilder.cs" />
     <Compile Include="Meta\ColumnSet.cs" />
-    <Compile Include="Statements\StatementBase.cs" />
     <Compile Include="Statements\StatementFrom.cs" />
     <Compile Include="Statements\StatementGroup.cs" />
     <Compile Include="Statements\StatementJoin.cs" />
@@ -73,6 +84,9 @@
       <Project>{eef3293d-bfc0-49cb-bcb0-1b0e98fd3f25}</Project>
       <Name>DevBlah.DotNetToolkit</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Statements\Join\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

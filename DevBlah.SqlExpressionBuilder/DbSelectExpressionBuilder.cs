@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DevBlah.SqlExpressionBuilder.Expressions;
+using DevBlah.SqlExpressionBuilder.Mixins;
 using DevBlah.SqlExpressionBuilder.Statements;
 
 namespace DevBlah.SqlExpressionBuilder
@@ -14,7 +15,8 @@ namespace DevBlah.SqlExpressionBuilder
     /// <typeparam name="TFluent"></typeparam>
     /// <typeparam name="TDbParameter">subtype IDbParameter</typeparam>
     public abstract class DbSelectExpressionBuilder<TFluent, TDbParameter>
-        : IDbSelectExpressionBuilder<TFluent, TDbParameter>
+        : IDbSelectExpressionBuilder<TFluent, TDbParameter>,
+        IWhereStatementFacadeMixin<TFluent>
         where TFluent : DbSelectExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter, new()
     {
@@ -23,86 +25,21 @@ namespace DevBlah.SqlExpressionBuilder
         private readonly List<StatementJoin> _stmtJoin = new List<StatementJoin>();
         private readonly StatementOrder _stmtOrder = new StatementOrder();
         private StatementSelect _stmtSelect = new StatementSelect();
-        private readonly StatementWhere _stmtWhere = new StatementWhere();
         private readonly StatementGroup _stmtGroup = new StatementGroup();
+
+        private readonly WhereSet _whereSet = new WhereSet();
+
+        public WhereSet WhereSet { get { return _whereSet; } }
 
         public IEnumerable<TDbParameter> Parameters
         {
             get { return _parameters; }
         }
 
-        public string WhereLogicalConnectionString
-        {
-            get { return _stmtWhere.LogicalConnectionString; }
-            set { _stmtWhere.LogicalConnectionString = value; }
-        }
-
         public int Top
         {
             get { return _stmtSelect.Top; }
             set { _stmtSelect.Top = value; }
-        }
-
-        public TFluent BindParameter(TDbParameter parameter)
-        {
-            TDbParameter param = _parameters.FirstOrDefault(x => x.ParameterName == parameter.ParameterName);
-            // ReSharper disable once CompareNonConstrainedGenericWithNull
-            if (param != null)
-            {
-                _parameters.Remove(param);
-            }
-            _parameters.Add(parameter);
-            return (TFluent)this;
-        }
-
-        public TFluent BindParameter(string name, object value)
-        {
-            TDbParameter param = _parameters.FirstOrDefault(x => x.ParameterName == name);
-            // ReSharper disable once CompareNonConstrainedGenericWithNull
-            if (param == null)
-            {
-                throw new InvalidOperationException(
-                    string.Format("Parameter with the Name '{0}' couldn't be found.", name));
-            }
-            param.Value = value;
-            return (TFluent)this;
-        }
-
-        public TFluent BindParameter(string name, DbType dbType, object value)
-        {
-            BindParameter(name, dbType, value, false);
-            return (TFluent)this;
-        }
-
-        public TFluent BindParameter(string name, DbType dbType, object value, bool suppressWarning)
-        {
-            TDbParameter param = _parameters.FirstOrDefault(x => x.ParameterName == name);
-            // ReSharper disable once CompareNonConstrainedGenericWithNull
-            if (param == null && !suppressWarning)
-            {
-                throw new InvalidOperationException(
-                    string.Format("Parameter with the Name '{0}' couldn't be found.", name));
-            }
-
-            param = new TDbParameter
-            {
-                ParameterName = name,
-                DbType = dbType,
-                Value = value
-            };
-
-
-            _parameters.Add(param);
-            return (TFluent)this;
-        }
-
-        public TFluent BindParameters(IEnumerable<TDbParameter> parameters)
-        {
-            foreach (TDbParameter param in parameters)
-            {
-                BindParameter(param);
-            }
-            return (TFluent)this;
         }
 
         public TFluent Distinct()
@@ -179,9 +116,9 @@ namespace DevBlah.SqlExpressionBuilder
 
             expressions.AddRange(_stmtJoin);
 
-            if (_stmtWhere.WhereClauses.Count > 0)
+            if (!_whereSet.IsEmpty)
             {
-                expressions.Add(_stmtWhere);
+                expressions.Add(_whereSet);
             }
 
             if (_stmtGroup.Columns.Count > 0)
@@ -226,22 +163,6 @@ namespace DevBlah.SqlExpressionBuilder
             return (TFluent)this;
         }
 
-        public TFluent Join(SqlJoinTypes type, Table table, string on,
-            IEnumerable<TDbParameter> parameters)
-        {
-            Join(type, table, on);
-            BindParameters(parameters);
-            return (TFluent)this;
-        }
-
-        public TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters)
-        {
-            Join(type, table, on, columns);
-            BindParameters(parameters);
-            return (TFluent)this;
-        }
-
         public TFluent Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on)
         {
             if (!_IsTablePresent(on.Actual.Table))
@@ -281,19 +202,6 @@ namespace DevBlah.SqlExpressionBuilder
         public TFluent JoinInner(Table table, string on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Inner, table, on, columns);
-            return (TFluent)this;
-        }
-
-        public TFluent JoinInner(Table table, string on, IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Inner, table, on, parameters);
-            return (TFluent)this;
-        }
-
-        public TFluent JoinInner(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Inner, table, on, columns, parameters);
             return (TFluent)this;
         }
 
@@ -357,19 +265,6 @@ namespace DevBlah.SqlExpressionBuilder
             return (TFluent)this;
         }
 
-        public TFluent JoinLeft(Table table, string on, IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Left, table, on, parameters);
-            return (TFluent)this;
-        }
-
-        public TFluent JoinLeft(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Left, table, on, columns, parameters);
-            return (TFluent)this;
-        }
-
         public TFluent JoinLeft(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Left, on);
@@ -430,19 +325,6 @@ namespace DevBlah.SqlExpressionBuilder
             return (TFluent)this;
         }
 
-        public TFluent JoinOuter(Table table, string on, IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Outer, table, on, parameters);
-            return (TFluent)this;
-        }
-
-        public TFluent JoinOuter(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Outer, table, on, columns, parameters);
-            return (TFluent)this;
-        }
-
         public TFluent JoinOuter(Compare<ColumnExpression, ColumnExpression> on)
         {
             Join(SqlJoinTypes.Outer, on);
@@ -499,19 +381,6 @@ namespace DevBlah.SqlExpressionBuilder
         public TFluent JoinRight(Table table, string on, IEnumerable<string> columns)
         {
             Join(SqlJoinTypes.Right, table, on, columns);
-            return (TFluent)this;
-        }
-
-        public TFluent JoinRight(Table table, string on, IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Right, table, on, parameters);
-            return (TFluent)this;
-        }
-
-        public TFluent JoinRight(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters)
-        {
-            Join(SqlJoinTypes.Right, table, on, columns, parameters);
             return (TFluent)this;
         }
 
@@ -678,92 +547,29 @@ namespace DevBlah.SqlExpressionBuilder
             return GetSqlString();
         }
 
-        public TFluent Where(string clause, string name = null)
+        public TFluent Where(string clause)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                name = string.Format("@Undefinded{0}", ++_stmtWhere.UndefinedCount);
-            }
-            _SetParameters(_ParseParameters(clause));
-            _stmtWhere.WhereClauses.Add(name, clause);
-            return (TFluent)this;
+            return IWhereStatementFacadeMixinExtensions.Where(this, clause);
         }
 
-        public TFluent Where(string clause, IEnumerable<TDbParameter> parameters, string name = null)
+        public TFluent Where(IExpression exp, object value)
         {
-            Where(clause, name);
-            BindParameters(parameters);
-            return (TFluent)this;
+            return IWhereStatementFacadeMixinExtensions.Where(this, exp, value);
         }
 
-        public TFluent Where(ColumnExpression col, TDbParameter param)
+        public TFluent Where(IExpression exp, object value, CompareOperations compare)
         {
-            Where(col, param, CompareOperations.Equals);
-            return (TFluent)this;
+            return IWhereStatementFacadeMixinExtensions.Where(this, exp, value, compare);
         }
 
-        public TFluent Where(ColumnExpression col, TDbParameter param, CompareOperations compare)
+        public TFluent Where(IExpression exp1, IExpression exp2)
         {
-            Where(new Compare<ColumnExpression, TDbParameter>(compare, col, param));
-            return (TFluent)this;
+            return IWhereStatementFacadeMixinExtensions.Where(this, exp1, exp2);
         }
 
-        public TFluent Where(ColumnExpression col, string value)
+        public TFluent Where(IExpression exp1, IExpression exp2, CompareOperations compare)
         {
-            Where(col, value, CompareOperations.Equals);
-            return (TFluent)this;
-        }
-
-        public TFluent Where(ColumnExpression col, string value, CompareOperations compare)
-        {
-            Where(new Compare<ColumnExpression, string>(compare, col, value));
-            return (TFluent)this;
-        }
-
-        public TFluent Where(ColumnExpression col, Expression expression)
-        {
-            Where(col, expression, CompareOperations.Equals);
-            return (TFluent)this;
-        }
-
-        public TFluent Where(ColumnExpression col, Expression expression, CompareOperations compare)
-        {
-            Where(new Compare<ColumnExpression, Expression>(compare, col, expression));
-            return (TFluent)this;
-        }
-
-        public TFluent Where(Compare<ColumnExpression, TDbParameter> compare)
-        {
-            Where(compare.ToString(), compare.Expected.ParameterName);
-            BindParameter(compare.Expected);
-            return (TFluent)this;
-        }
-
-        public TFluent Where(Compare<ColumnExpression, string> compare)
-        {
-            Where(compare.ToString());
-            BindParameter(new TDbParameter { ParameterName = compare.Expected });
-            return (TFluent)this;
-        }
-
-        public TFluent Where(Compare<ColumnExpression, Expression> compare)
-        {
-            Where(compare.ToString());
-            return (TFluent)this;
-        }
-
-        public TFluent Where(Compare<string, TDbParameter> compare)
-        {
-            Where(compare.ToString(), compare.Expected.ParameterName);
-            BindParameter(compare.Expected);
-            return (TFluent)this;
-        }
-
-        public TFluent Where(Compare<string, string> compare)
-        {
-            Where(compare.ToString());
-            BindParameter(new TDbParameter { ParameterName = compare.Expected });
-            return (TFluent)this;
+            return IWhereStatementFacadeMixinExtensions.Where(this, exp1, exp2, compare);
         }
 
         private void _AddColumnsToSelect(IEnumerable<string> columns, Table table)

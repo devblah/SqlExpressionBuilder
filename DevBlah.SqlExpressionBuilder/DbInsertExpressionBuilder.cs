@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using DevBlah.DotNetToolkit.System.Extensions;
 using DevBlah.SqlExpressionBuilder.Meta;
+using DevBlah.SqlExpressionBuilder.Statements;
 
 namespace DevBlah.SqlExpressionBuilder
 {
@@ -13,10 +13,9 @@ namespace DevBlah.SqlExpressionBuilder
         where TFluent : DbInsertExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter, new()
     {
-        private IList<string> _columnKeys;
-        private List<IDictionary<string, object>> _rows;
+        protected IList<string> ColumnKeys;
+        private List<RowSet> _insertSets;
         private string _tableName;
-
         protected DbInsertExpressionBuilder(string tableName, ColumnSet columns, bool ignoreMissingColumns = false)
         {
             _tableName = tableName;
@@ -24,7 +23,7 @@ namespace DevBlah.SqlExpressionBuilder
 
             if (!ignoreMissingColumns)
             {
-                _columnKeys = columns.Keys.ToList();
+                ColumnKeys = columns.Keys.ToList();
             }
         }
 
@@ -34,25 +33,25 @@ namespace DevBlah.SqlExpressionBuilder
 
         public void AddRow(IDictionary<string, object> row)
         {
-            if (_rows == null)
+            if (_insertSets == null)
             {
-                _rows = new List<IDictionary<string, object>>();
+                _insertSets = new List<RowSet>();
             }
 
-            if (_columnKeys == null)
+            if (ColumnKeys == null)
             {
                 _ValidateAllRowColumnsExist(row, ColumnSet.Keys);
-                _columnKeys = row.Keys.ToList();
+                ColumnKeys = row.Keys.ToList();
             }
             else
             {
                 _ValidateAll(row);
             }
 
-            _rows.Add(row);
+            _insertSets.Add(new RowSet(ColumnSet) { Row = row });
         }
 
-        public void AddRow(object row)
+        public void AddRow(dynamic row)
         {
             var dict = row.ToDictionary();
             if (dict == null)
@@ -77,22 +76,22 @@ namespace DevBlah.SqlExpressionBuilder
 
         public override string ToString()
         {
-            if (_rows == null)
+            if (_insertSets == null || _insertSets.Count == 0)
             {
                 throw new InvalidOperationException("No rows added yet.");
             }
 
             var sb = new StringBuilder("INSERT INTO ");
             sb.Append(_tableName).Append(" (");
-            sb.Append(string.Join(", ", _columnKeys)).Append(") VALUES ");
+            sb.Append(string.Join(", ", ColumnKeys)).Append(") VALUES ");
 
             var parameterStrings = new List<string>();
 
-            for (int i = 0; i < _rows.Count; i++)
+            for (int i = 0; i < _insertSets.Count; i++)
             {
                 int index = i;
                 parameterStrings.Add(string.Join(", ",
-                    _columnKeys.Select(c => string.Format("@{0}_{1}", c, index))));
+                    ColumnKeys.Select(c => string.Format("@{0}_{1}", c, index))));
             }
 
             sb.Append(string.Join(", ", parameterStrings.Select(s => string.Format("({0})", s))));
@@ -100,11 +99,30 @@ namespace DevBlah.SqlExpressionBuilder
             return sb.ToString();
         }
 
+        private IEnumerable<TDbParameter> _GetParameters()
+        {
+            var parameters = new List<TDbParameter>();
+
+            if (_insertSets == null)
+            {
+                return parameters;
+            }
+
+            for (int i = 0; i < _insertSets.Count; i++)
+            {
+                int index = i;
+                var currentParameters = _insertSets[i].GetParameters(ColumnKeys);
+                parameters.AddRange(currentParameters.Select(p => p.ToDbDataParameter<TDbParameter>(index)));
+            }
+
+            return parameters;
+        }
+
         private void _ValidateAll(IDictionary<string, object> row)
         {
-            _ValidateAllRowColumnsExist(row, _columnKeys);
+            _ValidateAllRowColumnsExist(row, ColumnKeys);
 
-            _ValidateRowColumnsMissing(row, _columnKeys);
+            _ValidateRowColumnsMissing(row, ColumnKeys);
         }
 
         private void _ValidateAllRowColumnsExist(IDictionary<string, object> row, IEnumerable<string> compare)
@@ -132,40 +150,6 @@ namespace DevBlah.SqlExpressionBuilder
                         "when the option 'ignoreMissingColumns' is active",
                         string.Join(", ", columnsNotExisting.Select(c => "'" + c + "'"))));
             }
-        }
-
-        private IEnumerable<TDbParameter> _GetParameters()
-        {
-            var parameters = new List<TDbParameter>();
-
-            if (_rows == null)
-            {
-                return parameters;
-            }
-
-            for (int i = 0; i < _rows.Count; i++)
-            {
-                foreach (string columnKey in _columnKeys)
-                {
-                    Tuple<DbType, int?> columnMeta = ColumnSet[columnKey];
-
-                    var param = new TDbParameter
-                    {
-                        DbType = columnMeta.Item1,
-                        ParameterName = string.Format("@{0}_{1}", columnKey, i),
-                        Value = _rows[i][columnKey] ?? DBNull.Value,
-                    };
-
-                    if (columnMeta.Item2.HasValue)
-                    {
-                        param.Size = columnMeta.Item2.Value;
-                    }
-
-                    parameters.Add(param);
-                }
-            }
-
-            return parameters;
         }
     }
 }

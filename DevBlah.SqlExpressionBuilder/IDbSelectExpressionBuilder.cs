@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using DevBlah.SqlExpressionBuilder.Expressions;
+using DevBlah.SqlExpressionBuilder.Interfaces;
 
 namespace DevBlah.SqlExpressionBuilder
 {
     /// <summary>
     /// Interface for creating a implementation for a specific database driver
     /// </summary>
-    public interface IDbSelectExpressionBuilder<out TFluent, TDbParameter>
+    public interface IDbSelectExpressionBuilder<out TFluent, TDbParameter> : IWhereStatementFacade<TFluent>
         where TFluent : IDbSelectExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter
     {
@@ -22,53 +23,6 @@ namespace DevBlah.SqlExpressionBuilder
         /// TODO: make generic for other db types
         /// </summary>
         int Top { get; set; }
-
-        /// <summary>
-        /// Specifies how the parts of the where expression are connected to each other
-        /// </summary>
-        string WhereLogicalConnectionString { get; set; }
-
-        /// <summary>
-        /// Binds a TDbParameter object to this query
-        /// </summary>
-        /// <param name="parameter">TDbParameter object</param>
-        /// <returns>this instance</returns>
-        TFluent BindParameter(TDbParameter parameter);
-
-        /// <summary>
-        /// Binds a parameter, which is already configured
-        /// </summary>
-        /// <param name="name">name of the parameter</param>
-        /// <param name="value">value of the parameter</param>
-        /// <returns>this instance</returns>
-        TFluent BindParameter(string name, object value);
-
-        /// <summary>
-        /// Binds a parameter, which isn't configured yet
-        /// </summary>
-        /// <param name="name">name of the param</param>
-        /// <param name="dbType">Database Type</param>
-        /// <param name="value">value to bind</param>
-        /// <returns></returns>
-        TFluent BindParameter(string name, DbType dbType, object value);
-
-        /// <summary>
-        /// Binds a parameter, which isn't configured yet
-        /// </summary>
-        /// <param name="name">name of the param</param>
-        /// <param name="dbType">Database Type</param>
-        /// <param name="value">value to bind</param>
-        /// <param name="suppressWarning">if the exception, which is raised when a parameter with the given name 
-        /// couldn't be found should be suppressed</param>
-        /// <returns></returns>
-        TFluent BindParameter(string name, DbType dbType, object value, bool suppressWarning);
-
-        /// <summary>
-        /// Binds a bunch of TDbParameter objects to this query
-        /// </summary>
-        /// <param name="parameters">Liste von TDbParametern</param>
-        /// <returns>this instance</returns>
-        TFluent BindParameters(IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds the distinct keyword to the query, to avoid getting duplicate rows
@@ -163,29 +117,6 @@ namespace DevBlah.SqlExpressionBuilder
         TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="type">type of the join</param>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent Join(SqlJoinTypes type, Table table, string on,
-            IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="type">type of the join</param>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
         /// the join table, second column to the table which will be referenced by the join.
         /// </summary>
@@ -230,26 +161,6 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of columns to select</param>
         /// <returns>this instance</returns>
         TFluent JoinInner(Table table, string on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(Table table, string on, IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a INNER JOIN clause for the given table. First column of the expression comparer references to
@@ -333,26 +244,6 @@ namespace DevBlah.SqlExpressionBuilder
         TFluent JoinLeft(Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(Table table, string on, IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
         /// the join table, second column to the table which will be referenced by the join.
         /// </summary>
@@ -434,26 +325,6 @@ namespace DevBlah.SqlExpressionBuilder
         TFluent JoinOuter(Table table, string on, IEnumerable<string> columns);
 
         /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(Table table, string on, IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
         /// the join table, second column to the table which will be referenced by the join.
         /// </summary>
@@ -533,26 +404,6 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">list of columns to select</param>
         /// <returns>this instance</returns>
         TFluent JoinRight(Table table, string on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(Table table, string on, IEnumerable<TDbParameter> parameters);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <param name="parameters">list of parameters in this context</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(Table table, string on, IEnumerable<string> columns,
-            IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds a JOIN clause for the given table. First column of the expression comparer references to
@@ -727,107 +578,6 @@ namespace DevBlah.SqlExpressionBuilder
         /// <returns>this instance</returns>
         TFluent Select(IExpression expression);
 
-        /// <summary>
-        /// Adds a clause to where statement
-        /// </summary>
-        /// <param name="clause">where clause to add</param>
-        /// <param name="name">the name to identify the clause</param>
-        /// <returns>this instance</returns>
-        TFluent Where(string clause, string name = null);
 
-        /// <summary>
-        /// Adds a clause and their parameters to where statement
-        /// </summary>
-        /// <param name="clause">where clause to add</param>
-        /// <param name="parameters">array of parameters of this clause</param>
-        /// <param name="name">the name to identify the clause</param>
-        /// <returns>this instance</returns>
-        TFluent Where(string clause, IEnumerable<TDbParameter> parameters, string name = null);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a TDbParameter
-        /// </summary>
-        /// <param name="col">column, which should be compared</param>
-        /// <param name="param">IDbParameter with the value, which should be compared</param>
-        /// <returns>this instance</returns>
-        TFluent Where(ColumnExpression col, TDbParameter param);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a TDbParameter
-        /// </summary>
-        /// <param name="col">column, which should be compared</param>
-        /// <param name="param">IDbParameter with the value, which should be compared</param>
-        /// <param name="compare">how to compare the two expressions</param>
-        /// <returns>this instance</returns>
-        TFluent Where(ColumnExpression col, TDbParameter param, CompareOperations compare);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a given value, given as a string
-        /// </summary>
-        /// <param name="col">column, which should be compared</param>
-        /// <param name="value">value, which should be compared</param>
-        /// <returns>this instance</returns>
-        TFluent Where(ColumnExpression col, string value);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a given value, given as a string
-        /// </summary>
-        /// <param name="col">column, which should be compared</param>
-        /// <param name="value">value, which should be compared</param>
-        /// <param name="compare">how to compare the two expressions</param>
-        /// <returns>this instance</returns>
-        TFluent Where(ColumnExpression col, string value, CompareOperations compare);
-
-        /// <summary>
-        /// Adds a single comparison between a column and an sql expression
-        /// </summary>
-        /// <param name="col">column, which should be compared</param>
-        /// <param name="expression">expression, which should be compared</param>
-        /// <returns></returns>
-        TFluent Where(ColumnExpression col, Expression expression);
-
-        /// <summary>
-        /// Adds a single comparison between a column and an sql expression
-        /// </summary>
-        /// <param name="col">column, which should be compared</param>
-        /// <param name="expression">expression, which should be compared</param>
-        /// <param name="compare">how to compare the two expressions</param>
-        /// <returns></returns>
-        TFluent Where(ColumnExpression col, Expression expression, CompareOperations compare);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a TDbParameter
-        /// </summary>
-        /// <param name="compare">compare instance</param>
-        /// <returns>this instance</returns>
-        TFluent Where(Compare<ColumnExpression, TDbParameter> compare);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a TDbParameter, given as a string
-        /// </summary>
-        /// <param name="compare"></param>
-        /// <returns></returns>
-        TFluent Where(Compare<ColumnExpression, string> compare);
-
-        /// <summary>
-        /// Adds a single comparison between a column and an sql expression
-        /// </summary>
-        /// <param name="compare"></param>
-        /// <returns></returns>
-        TFluent Where(Compare<ColumnExpression, Expression> compare);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a TDbParameter
-        /// </summary>
-        /// <param name="compare">compare instance</param>
-        /// <returns>this instance</returns>
-        TFluent Where(Compare<string, TDbParameter> compare);
-
-        /// <summary>
-        /// Adds a single comparison between a column and a TDbParameter, given as a string
-        /// </summary>
-        /// <param name="compare"></param>
-        /// <returns></returns>
-        TFluent Where(Compare<string, string> compare);
     }
 }

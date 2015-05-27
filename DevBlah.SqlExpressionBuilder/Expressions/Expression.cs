@@ -26,6 +26,7 @@
         /// expression content
         /// </summary>
         public string Content { get; private set; }
+
         /// <summary>
         /// creates the actual expression string
         /// </summary>

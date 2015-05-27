@@ -106,7 +106,6 @@ namespace DevBlah.SqlExpressionBuilder.Tests
         {
             var builder = new MsSqlInsertExpressionBuilder("table", _columnSet);
 
-
             List<SqlParameter> parameters = builder.Parameters.ToList();
 
             Assert.Equal(0, parameters.Count);

@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using DevBlah.SqlExpressionBuilder.Expressions;
+using DevBlah.SqlExpressionBuilder.Meta;
 using DevBlah.SqlExpressionBuilder.MsSql;
 using Xunit;
 
@@ -11,61 +10,61 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 {
     public class SelectExpressionBuilderFacts
     {
-        [Fact]
-        public void BindParameter_BindAndRebindParameterFact()
-        {
-            var builder = new MsSqlSelectExpressionBuilder();
-            builder.From("table", "t");
-            builder.Where("t.foo = @foo");
+        //[Fact]
+        //public void BindParameter_BindAndRebindParameterFact()
+        //{
+        //    var builder = new MsSqlSelectExpressionBuilder();
+        //    builder.From("table", "t");
+        //    builder.Where("t.foo = @foo");
 
-            var param = new SqlParameter("@foo", SqlDbType.Int) { Value = 5 };
-            builder.BindParameter(param);
-            Assert.Equal(1, builder.Parameters.Count());
-            Assert.Equal(param, builder.Parameters.First());
+        //    var param = new SqlParameter("@foo", SqlDbType.Int) { Value = 5 };
+        //    builder.BindParameter(param);
+        //    Assert.Equal(1, builder.Parameters.Count());
+        //    Assert.Equal(param, builder.Parameters.First());
 
-            // Rebind by new param
-            var newParam = new SqlParameter("@foo", SqlDbType.Int) { Value = 6 };
-            builder.BindParameter(newParam);
-            Assert.Equal(1, builder.Parameters.Count());
-            Assert.Equal(newParam, builder.Parameters.First());
+        //    // Rebind by new param
+        //    var newParam = new SqlParameter("@foo", SqlDbType.Int) { Value = 6 };
+        //    builder.BindParameter(newParam);
+        //    Assert.Equal(1, builder.Parameters.Count());
+        //    Assert.Equal(newParam, builder.Parameters.First());
 
-            // Rebind by overwrite
-            builder.BindParameter("@foo", 7);
-            Assert.Equal(1, builder.Parameters.Count());
-            Assert.Equal(newParam, builder.Parameters.First());
-            Assert.Equal(7, builder.Parameters.First().Value);
-        }
+        //    // Rebind by overwrite
+        //    builder.BindParameter("@foo", 7);
+        //    Assert.Equal(1, builder.Parameters.Count());
+        //    Assert.Equal(newParam, builder.Parameters.First());
+        //    Assert.Equal(7, builder.Parameters.First().Value);
+        //}
 
-        [Fact]
-        public void BindParameter_DoesNotThrowOnParameterFoundFact()
-        {
-            var builder = new MsSqlSelectExpressionBuilder();
-            builder.From("table", "t");
+        //[Fact]
+        //public void BindParameter_DoesNotThrowOnParameterFoundFact()
+        //{
+        //    var builder = new MsSqlSelectExpressionBuilder();
+        //    builder.From("table", "t");
 
-            builder.Where("t.foo = @foo");
+        //    builder.Where("t.foo = @foo");
 
-            Assert.DoesNotThrow(() => builder.BindParameter("@foo", DbType.Int32, 12));
-        }
+        //    Assert.DoesNotThrow(() => builder.BindParameter("@foo", DbType.Int32, 12));
+        //}
 
-        [Fact]
-        public void BindParameter_DoesNotThrowOnSupressedWarningFact()
-        {
-            var builder = new MsSqlSelectExpressionBuilder();
-            builder.From("table", "t");
+        //[Fact]
+        //public void BindParameter_DoesNotThrowOnSupressedWarningFact()
+        //{
+        //    var builder = new MsSqlSelectExpressionBuilder();
+        //    builder.From("table", "t");
 
-            Assert.DoesNotThrow(() => builder.BindParameter("@foo", DbType.Int32, 12, true));
-        }
+        //    Assert.DoesNotThrow(() => builder.BindParameter("@foo", DbType.Int32, 12, true));
+        //}
 
-        [Fact]
-        public void BindParameter_ThrowsOnParameterNotFoundFact()
-        {
-            var builder = new MsSqlSelectExpressionBuilder();
-            builder.From("table", "t");
+        //[Fact]
+        //public void BindParameter_ThrowsOnParameterNotFoundFact()
+        //{
+        //    var builder = new MsSqlSelectExpressionBuilder();
+        //    builder.From("table", "t");
 
-            Assert.Throws<InvalidOperationException>(() => builder.BindParameter("@foo", DbType.Int32, 12));
+        //    Assert.Throws<InvalidOperationException>(() => builder.BindParameter("@foo", DbType.Int32, 12));
 
-            Assert.Throws<InvalidOperationException>(() => builder.BindParameter("@foo", 12));
-        }
+        //    Assert.Throws<InvalidOperationException>(() => builder.BindParameter("@foo", 12));
+        //}
 
         [Fact]
         public void FillCommand()
@@ -74,15 +73,17 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             var builder = new MsSqlSelectExpressionBuilder();
             var fromTable = new Table("table", "t");
-            var param = new SqlParameter("@bla", SqlDbType.VarChar) { Value = 5 };
+            var param = new DbParameterProxy("@bla", DbType.String) { Value = 5 };
 
             builder.From(fromTable);
-            builder.Where("t.col = @bla", new[] { param });
+            //builder.Where("t.col = @bla", new[] { param });
 
             builder.FillCommand(command);
 
             Assert.Equal(1, command.Parameters.Count);
-            Assert.Equal(param, command.Parameters.Cast<SqlParameter>().First());
+
+            // TODO adjust
+            //Assert.Equal(param, command.Parameters.Cast<SqlParameter>().First());
 
             Assert.Equal(builder.ToString(), command.CommandText);
         }
@@ -94,10 +95,10 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             var builder = new MsSqlSelectExpressionBuilder();
             var fromTable = new Table("table", "t");
-            var param = new SqlParameter("@bla", SqlDbType.VarChar);
+            var param = new DbParameterProxy("@bla", DbType.String);
 
             builder.From(fromTable);
-            builder.Where("t.col = @bla", new[] { param });
+            //builder.Where("t.col = @bla", new[] { param });
 
             Assert.Throws<Exception>(() => builder.FillCommand(command));
         }
@@ -152,15 +153,15 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder.JoinInner(joinTable1, "f.Id = j1.f_Id");
             builder.JoinInner("dbo.join2", "j2", "j1.Id = j2.j1_Id");
             builder.JoinInner(joinTable3, "j2.Id = j3.j2_Id", new[] { "col1", "col2", "col3" });
-            builder.JoinInner(
-                joinTable4,
-                "j3.Id = j4.j3_Id AND j4.col1 = @param1",
-                new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
-            builder.JoinInner(
-                joinTable5,
-                "j4.Id = j5.j4_Id AND j5.col1 = @param2",
-                new[] { "col1", "col2" },
-                new[] { new SqlParameter { ParameterName = "@param2" } });
+            //builder.JoinInner(
+            //    joinTable4,
+            //    "j3.Id = j4.j3_Id AND j4.col1 = @param1",
+            //    new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
+            //builder.JoinInner(
+            //    joinTable5,
+            //    "j4.Id = j5.j4_Id AND j5.col1 = @param2",
+            //    new[] { "col1", "col2" },
+            //    new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinInner(
                 new Compare<ColumnExpression, ColumnExpression>(
                     new ColumnExpression("Id", joinTable5),
@@ -213,15 +214,15 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder.JoinLeft(joinTable1, "f.Id = j1.f_Id");
             builder.JoinLeft("dbo.join2", "j2", "j1.Id = j2.j1_Id");
             builder.JoinLeft(joinTable3, "j2.Id = j3.j2_Id", new[] { "col1", "col2", "col3" });
-            builder.JoinLeft(
-                joinTable4,
-                "j3.Id = j4.j3_Id AND j4.col1 = @param1",
-                new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
-            builder.JoinLeft(
-                joinTable5,
-                "j4.Id = j5.j4_Id AND j5.col1 = @param2",
-                new[] { "col1", "col2" },
-                new[] { new SqlParameter { ParameterName = "@param2" } });
+            //builder.JoinLeft(
+            //    joinTable4,
+            //    "j3.Id = j4.j3_Id AND j4.col1 = @param1",
+            //    new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
+            //builder.JoinLeft(
+            //    joinTable5,
+            //    "j4.Id = j5.j4_Id AND j5.col1 = @param2",
+            //    new[] { "col1", "col2" },
+            //    new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinLeft(
                 new Compare<ColumnExpression, ColumnExpression>(
                     new ColumnExpression("Id", joinTable5),
@@ -274,15 +275,15 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder.JoinOuter(joinTable1, "f.Id = j1.f_Id");
             builder.JoinOuter("dbo.join2", "j2", "j1.Id = j2.j1_Id");
             builder.JoinOuter(joinTable3, "j2.Id = j3.j2_Id", new[] { "col1", "col2", "col3" });
-            builder.JoinOuter(
-                joinTable4,
-                "j3.Id = j4.j3_Id AND j4.col1 = @param1",
-                new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
-            builder.JoinOuter(
-                joinTable5,
-                "j4.Id = j5.j4_Id AND j5.col1 = @param2",
-                new[] { "col1", "col2" },
-                new[] { new SqlParameter { ParameterName = "@param2" } });
+            //builder.JoinOuter(
+            //    joinTable4,
+            //    "j3.Id = j4.j3_Id AND j4.col1 = @param1",
+            //    new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
+            //builder.JoinOuter(
+            //    joinTable5,
+            //    "j4.Id = j5.j4_Id AND j5.col1 = @param2",
+            //    new[] { "col1", "col2" },
+            //    new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinOuter(
                 new Compare<ColumnExpression, ColumnExpression>(
                     new ColumnExpression("Id", joinTable5),
@@ -364,8 +365,8 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var fromTable = new Table("dbo.from", "f");
             var joinTable1 = new Table("dbo.join1", "j1");
             var joinTable3 = new Table("dbo.join3", "j3");
-            var joinTable4 = new Table("dbo.join4", "j4");
-            var joinTable5 = new Table("dbo.join5", "j5");
+            //var joinTable4 = new Table("dbo.join4", "j4");
+            //var joinTable5 = new Table("dbo.join5", "j5");
             var joinTable6 = new Table("dbo.join6", "j6");
             var joinTable7 = new Table("dbo.join7", "j7");
             var joinTable8 = new Table("dbo.join8", "j8");
@@ -377,18 +378,18 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder.JoinRight(joinTable1, "f.Id = j1.f_Id");
             builder.JoinRight("dbo.join2", "j2", "j1.Id = j2.j1_Id");
             builder.JoinRight(joinTable3, "j2.Id = j3.j2_Id", new[] { "col1", "col2", "col3" });
-            builder.JoinRight(
-                joinTable4,
-                "j3.Id = j4.j3_Id AND j4.col1 = @param1",
-                new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
-            builder.JoinRight(
-                joinTable5,
-                "j4.Id = j5.j4_Id AND j5.col1 = @param2",
-                new[] { "col1", "col2" },
-                new[] { new SqlParameter { ParameterName = "@param2" } });
+            //builder.JoinRight(
+            //    joinTable4,
+            //    "j3.Id = j4.j3_Id AND j4.col1 = @param1",
+            //    new List<SqlParameter> { new SqlParameter { ParameterName = "@param1" } });
+            //builder.JoinRight(
+            //    joinTable5,
+            //    "j4.Id = j5.j4_Id AND j5.col1 = @param2",
+            //    new[] { "col1", "col2" },
+            //    new[] { new SqlParameter { ParameterName = "@param2" } });
             builder.JoinRight(
                 new Compare<ColumnExpression, ColumnExpression>(
-                    new ColumnExpression("Id", joinTable5),
+                    new ColumnExpression("Id", joinTable3),
                     new ColumnExpression("j5_Id", joinTable6)));
             builder.JoinRight(
                 new Compare<ColumnExpression, ColumnExpression>(
@@ -401,14 +402,14 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder.JoinRight(joinTable9.GetColumn("Id"), joinTableA.GetColumn("j9_Id"), CompareOperations.Equals);
 
             const string expected =
-                "SELECT j3.col1, j3.col2, j3.col3, j5.col1, j5.col2, j7.col1, j7.col2, j9.col1, j9.col2 " +
+                "SELECT j3.col1, j3.col2, j3.col3, j7.col1, j7.col2, j9.col1, j9.col2 " +
                 "FROM dbo.from f " +
                 "RIGHT JOIN dbo.join1 j1 ON f.Id = j1.f_Id " +
                 "RIGHT JOIN dbo.join2 j2 ON j1.Id = j2.j1_Id " +
                 "RIGHT JOIN dbo.join3 j3 ON j2.Id = j3.j2_Id " +
-                "RIGHT JOIN dbo.join4 j4 ON j3.Id = j4.j3_Id AND j4.col1 = @param1 " +
-                "RIGHT JOIN dbo.join5 j5 ON j4.Id = j5.j4_Id AND j5.col1 = @param2 " +
-                "RIGHT JOIN dbo.join6 j6 ON j5.Id = j6.j5_Id " +
+                //"RIGHT JOIN dbo.join4 j4 ON j3.Id = j4.j3_Id AND j4.col1 = @param1 " +
+                //"RIGHT JOIN dbo.join5 j5 ON j4.Id = j5.j4_Id AND j5.col1 = @param2 " +
+                "RIGHT JOIN dbo.join6 j6 ON j3.Id = j6.j5_Id " +
                 "RIGHT JOIN dbo.join7 j7 ON j6.Id = j7.j6_Id " +
                 "RIGHT JOIN dbo.join8 j8 ON j7.Id = j8.j7_Id " +
                 "RIGHT JOIN dbo.join9 j9 ON j8.Id = j9.j8_Id " +
@@ -589,14 +590,10 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 .From(fromTable)
                 .Select(addressCol)
                 .Select(zipCityCol)
-                .Where(
-                    new Compare<string, string>(addressCol.Alias, "@address"));
-            builder.Where(
-                new Compare<string, SqlParameter>(zipCityCol.Alias, new SqlParameter { ParameterName = "@zc" }));
+                .Where(new Expression(addressCol.Alias), "@address");
             Assert.Equal(
                 "SELECT CONCAT(Street, Number) AS Address, CONCAT(Zip, City) AS ZipCity FROM dbo.from f " +
-                    "WHERE Address = @address AND ZipCity = @zc", builder.ToString());
-            Assert.Equal(2, builder.Parameters.Count());
+                    "WHERE (Address = @address)", builder.ToString());
         }
 
         [Fact]
@@ -606,15 +603,13 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.Where(fromTable.GetColumn("foo"), "@foo");
-            builder.Where(fromTable.GetColumn("bar"), new SqlParameter { ParameterName = "@bar" });
             builder.Where(fromTable.GetColumn("baz"), Expression.Null, CompareOperations.IsNot);
             builder.Where(fromTable.GetColumn("moo"),
                 new Expression("(SELECT value FROM options o WHERE key = 'mooKey')"));
 
-            Assert.Equal("SELECT * FROM dbo.from f WHERE f.foo = @foo AND f.bar = @bar AND f.baz IS NOT NULL " +
-                "AND f.moo = (SELECT value FROM options o WHERE key = 'mooKey')",
+            Assert.Equal("SELECT * FROM dbo.from f WHERE (f.foo = @foo AND f.baz IS NOT NULL " +
+                "AND f.moo = (SELECT value FROM options o WHERE key = 'mooKey'))",
                 builder.ToString());
-            Assert.Equal(2, builder.Parameters.Count());
         }
 
         [Fact]
@@ -625,19 +620,18 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             var builder = new MsSqlSelectExpressionBuilder();
             builder.From(fromTable);
             builder.Where("bla = @bla OR blubb = @bla");
-            Assert.Equal("SELECT * FROM dbo.from f WHERE bla = @bla OR blubb = @bla", builder.ToString());
-            Assert.Equal(1, builder.Parameters.Count());
+            Assert.Equal("SELECT * FROM dbo.from f WHERE (bla = @bla OR blubb = @bla)", builder.ToString());
         }
 
-        [Fact]
-        public void WhereQuery_SimpleWithParameterFact()
-        {
-            var fromTable = new Table("dbo.from", "f");
-            var builder = new MsSqlSelectExpressionBuilder();
-            builder.From(fromTable);
-            builder.Where("bla = @bla OR blubb = @bla", new[] { new SqlParameter { ParameterName = "@bla" } });
-            Assert.Equal("SELECT * FROM dbo.from f WHERE bla = @bla OR blubb = @bla", builder.ToString());
-            Assert.Equal(1, builder.Parameters.Count());
-        }
+        //[Fact]
+        //public void WhereQuery_SimpleWithParameterFact()
+        //{
+        //    var fromTable = new Table("dbo.from", "f");
+        //    var builder = new MsSqlSelectExpressionBuilder();
+        //    builder.From(fromTable);
+        //    builder.Where("bla = @bla OR blubb = @bla", new[] { new DbParameterProxy("@bla") });
+        //    Assert.Equal("SELECT * FROM dbo.from f WHERE bla = @bla OR blubb = @bla", builder.ToString());
+        //    Assert.Equal(1, builder.Parameters.Count());
+        //}
     }
 }

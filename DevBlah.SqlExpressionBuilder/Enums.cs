@@ -143,5 +143,11 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         Like
     }
+
+    public enum ConnectOperations
+    {
+        And,
+        Or
+    }
 }
 #pragma warning restore 1570
