@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DevBlah.SqlExpressionBuilder.Expressions;
 
 namespace DevBlah.SqlExpressionBuilder.Statements.Where
 {
@@ -25,27 +26,37 @@ namespace DevBlah.SqlExpressionBuilder.Statements.Where
                     { CompareOperations.Like, "{0} LIKE {1}" }
                 };
 
-        public WhereValueSet(string column, CompareOperations compare, object value, IList<IWhereSubSet> parent)
+        public WhereValueSet(ConnectOperations operation, IExpression left, CompareOperations compare, IExpression right)
         {
-            Parent = parent;
-            Column = column;
+            Operation = operation;
+            Left = left;
             CompareOperation = compare;
-            Value = value;
+            Right = right;
         }
+
+        public WhereValueSet(ConnectOperations operation, IExpression left, IExpression right)
+            : this(operation, left, CompareOperations.Equals, right)
+        { }
+
+        public WhereValueSet(IExpression left, CompareOperations compare, IExpression right)
+            : this(ConnectOperations.And, left, compare, right)
+        { }
+
+        public WhereValueSet(IExpression left, IExpression right)
+            : this(left, CompareOperations.Equals, right)
+        { }
 
         public ConnectOperations Operation { get; set; }
 
-        public IList<IWhereSubSet> Parent { get; private set; }
+        public IExpression Left { get; set; }
 
-        public string Column { get; set; }
-
-        public object Value { get; set; }
+        public IExpression Right { get; set; }
 
         public CompareOperations CompareOperation { get; set; }
 
         public override string ToString()
         {
-            return string.Format(CompareTemplates[CompareOperation], Column, Value);
+            return string.Format(CompareTemplates[CompareOperation], Left, Right);
         }
     }
 }

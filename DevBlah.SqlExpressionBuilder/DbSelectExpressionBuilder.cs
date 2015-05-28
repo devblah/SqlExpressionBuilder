@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text.RegularExpressions;
+using DevBlah.DotNetToolkit.Linq;
 using DevBlah.SqlExpressionBuilder.Expressions;
 using DevBlah.SqlExpressionBuilder.Mixins;
 using DevBlah.SqlExpressionBuilder.Statements;
+using DevBlah.SqlExpressionBuilder.Statements.Where;
 
 namespace DevBlah.SqlExpressionBuilder
 {
@@ -20,7 +21,6 @@ namespace DevBlah.SqlExpressionBuilder
         where TFluent : DbSelectExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter, new()
     {
-        private readonly List<TDbParameter> _parameters = new List<TDbParameter>();
         private readonly StatementFrom _stmtFrom = new StatementFrom();
         private readonly List<StatementJoin> _stmtJoin = new List<StatementJoin>();
         private readonly StatementOrder _stmtOrder = new StatementOrder();
@@ -33,7 +33,40 @@ namespace DevBlah.SqlExpressionBuilder
 
         public IEnumerable<TDbParameter> Parameters
         {
-            get { return _parameters; }
+            get
+            {
+                // traverse all subsets including other subsets
+                IEnumerable<IEnumerable<IWhereSubSet>> traversed = WhereSet
+                    .TraverseOfType<IWhereSubSet, IEnumerable<IWhereSubSet>>(x => x);
+
+                // flatten the wheresets
+                List<IWhereSubSet> flattened = traversed.SelectMany(x => x).ToList();
+
+                flattened.AddRange(WhereSet);
+
+                return flattened
+                    // only value sets which are including parameters
+                    .OfType<WhereValueSet>()
+                    .Where(x => x.Right is ParameterExpression)
+                    // convert to TDbParameter
+                    .Select(x =>
+                    {
+                        var parameter = (ParameterExpression)x.Right;
+                        var dbParameter = new TDbParameter
+                        {
+                            DbType = parameter.DbType,
+                            ParameterName = parameter.ParameterName,
+                            Value = parameter.Value
+                        };
+
+                        if (parameter.Size.HasValue)
+                        {
+                            dbParameter.Size = parameter.Size.Value;
+                        }
+
+                        return dbParameter;
+                    });
+            }
         }
 
         public int Top
@@ -142,7 +175,6 @@ namespace DevBlah.SqlExpressionBuilder
 
         public TFluent Join(SqlJoinTypes type, Table table, string on)
         {
-            _SetParameters(_ParseParameters(on));
             _stmtJoin.Add(new StatementJoin(type, table, on));
             return (TFluent)this;
         }
@@ -552,12 +584,12 @@ namespace DevBlah.SqlExpressionBuilder
             return IWhereStatementFacadeMixinExtensions.Where(this, clause);
         }
 
-        public TFluent Where(IExpression exp, object value)
+        public TFluent Where(IExpression exp, string value)
         {
             return IWhereStatementFacadeMixinExtensions.Where(this, exp, value);
         }
 
-        public TFluent Where(IExpression exp, object value, CompareOperations compare)
+        public TFluent Where(IExpression exp, string value, CompareOperations compare)
         {
             return IWhereStatementFacadeMixinExtensions.Where(this, exp, value, compare);
         }
@@ -637,22 +669,6 @@ namespace DevBlah.SqlExpressionBuilder
         private bool _IsTablePresent(Table table)
         {
             return _stmtFrom.Tables.Any(x => x == table) || _stmtJoin.Any(x => table == x.Table);
-        }
-
-        private IEnumerable<string> _ParseParameters(string clause)
-        {
-            var regQuotedStrings = new Regex("'[^']*'", RegexOptions.Compiled);
-            clause = regQuotedStrings.Replace(clause, "");
-            var regParameters = new Regex(@"@[\w]+", RegexOptions.Compiled);
-            return regParameters.Matches(clause).Cast<Match>().Select(x => x.Value).Distinct().ToArray();
-        }
-
-        private void _SetParameters(IEnumerable<string> names)
-        {
-            foreach (string name in names)
-            {
-                _parameters.Add(new TDbParameter { ParameterName = name });
-            }
         }
     }
 }

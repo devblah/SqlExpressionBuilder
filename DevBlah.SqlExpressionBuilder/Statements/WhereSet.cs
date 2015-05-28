@@ -13,17 +13,17 @@ namespace DevBlah.SqlExpressionBuilder.Statements
 
         public override string ToString()
         {
-            var sb = new StringBuilder("WHERE (");
+            var sb = new StringBuilder("WHERE ");
 
             _AddSubsetsToStringBuilder(sb);
-
-            sb.Append(")");
 
             return sb.ToString();
         }
 
         protected void _AddSubsetsToStringBuilder(StringBuilder sb)
         {
+            sb.Append("(");
+
             for (var i = 0; i < Count; ++i)
             {
                 if (i > 0)
@@ -33,6 +33,8 @@ namespace DevBlah.SqlExpressionBuilder.Statements
 
                 sb.Append(this[i]);
             }
+
+            sb.Append(")");
         }
     }
 }

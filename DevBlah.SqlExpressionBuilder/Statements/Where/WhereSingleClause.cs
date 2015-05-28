@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace DevBlah.SqlExpressionBuilder.Statements.Where
 {
-    class WhereSingleClause : IWhereSubSet
+    public class WhereSingleClause : IWhereSubSet
     {
-        public WhereSingleClause(string expression, ConnectOperations operation, IList<IWhereSubSet> parent)
+        public WhereSingleClause(ConnectOperations operation, string expression)
         {
             Expression = expression;
             Operation = operation;
-            Parent = parent;
         }
+
+        public WhereSingleClause(string expression)
+            : this(ConnectOperations.And, expression)
+        { }
 
         public string GetStatement()
         {
@@ -19,8 +21,6 @@ namespace DevBlah.SqlExpressionBuilder.Statements.Where
         public string Expression { get; set; }
 
         public ConnectOperations Operation { get; set; }
-
-        public IList<IWhereSubSet> Parent { get; private set; }
 
         public override string ToString()
         {

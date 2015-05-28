@@ -8,20 +8,20 @@ namespace DevBlah.SqlExpressionBuilder.Mixins
     {
         public static TFluent Where<TFluent>(this IWhereStatementFacadeMixin<TFluent> builder, string clause)
         {
-            builder.WhereSet.Add(new WhereSingleClause(clause, ConnectOperations.And, builder.WhereSet));
+            builder.WhereSet.Add(new WhereSingleClause(clause));
             return (TFluent)builder;
         }
 
         public static TFluent Where<TFluent>(this IWhereStatementFacadeMixin<TFluent> builder, IExpression exp,
-            object value)
+            string value)
         {
             return Where(builder, exp, value, CompareOperations.Equals);
         }
 
         public static TFluent Where<TFluent>(this IWhereStatementFacadeMixin<TFluent> builder, IExpression exp,
-            object value, CompareOperations compare)
+            string value, CompareOperations compare)
         {
-            builder.WhereSet.Add(new WhereValueSet(exp.ToString(), compare, value, builder.WhereSet));
+            builder.WhereSet.Add(new WhereValueSet(exp, compare, new Expression(value)));
             return (TFluent)builder;
         }
 
@@ -34,7 +34,7 @@ namespace DevBlah.SqlExpressionBuilder.Mixins
         public static TFluent Where<TFluent>(this IWhereStatementFacadeMixin<TFluent> builder, IExpression exp1,
             IExpression exp2, CompareOperations compare)
         {
-            builder.WhereSet.Add(new WhereValueSet(exp1.ToString(), compare, exp2, builder.WhereSet));
+            builder.WhereSet.Add(new WhereValueSet(exp1, compare, exp2));
             return (TFluent)builder;
         }
     }

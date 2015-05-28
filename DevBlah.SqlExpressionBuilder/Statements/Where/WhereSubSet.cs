@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace DevBlah.SqlExpressionBuilder.Statements.Where
 {
     public class WhereSubSet : WhereSet, IWhereSubSet
     {
-        public WhereSubSet(ConnectOperations operation, IList<IWhereSubSet> parent)
+        public WhereSubSet(ConnectOperations operation)
         {
             Operation = operation;
-            Parent = parent;
         }
 
-        public ConnectOperations Operation { get; set; }
+        public WhereSubSet()
+            : this(ConnectOperations.And)
+        { }
 
-        public IList<IWhereSubSet> Parent { get; private set; }
+        public ConnectOperations Operation { get; set; }
 
         public override string ToString()
         {

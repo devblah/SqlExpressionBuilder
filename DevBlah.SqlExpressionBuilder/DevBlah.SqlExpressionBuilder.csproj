@@ -47,6 +47,7 @@
     <Compile Include="Compare.cs" />
     <Compile Include="DbSelectExpressionBuilder.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Expressions\ParameterExpression.cs" />
     <Compile Include="Expressions\Expression.cs" />
     <Compile Include="Expressions\ColumnExpression.cs" />
     <Compile Include="Expressions\CountExpression.cs" />
