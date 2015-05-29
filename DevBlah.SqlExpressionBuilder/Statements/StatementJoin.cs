@@ -1,27 +1,23 @@
-﻿using System;
-using DevBlah.SqlExpressionBuilder.Expressions;
+﻿using DevBlah.SqlExpressionBuilder.Meta;
+using DevBlah.SqlExpressionBuilder.Meta.Conditions;
 
 namespace DevBlah.SqlExpressionBuilder.Statements
 {
-    internal class StatementJoin : StatementBase
+    public class StatementJoin : StatementBase
     {
         public SqlJoinTypes JoinType { get; private set; }
 
         public Table Table { get; private set; }
 
-        public string On { get; private set; }
+        public ConditionSet On { get; set; }
 
-        public StatementJoin(SqlJoinTypes joinType, Table table, string on)
+        public StatementJoin(SqlJoinTypes joinType, Table table, ConditionSet on)
             : base(SqlExpressionTypes.Join)
         {
             JoinType = joinType;
             Table = table;
             On = on;
         }
-
-        public StatementJoin(SqlJoinTypes joinType, Compare<ColumnExpression, ColumnExpression> comparer)
-            : this(joinType, comparer.Expected.Table, comparer.ToString())
-        { }
 
         public override string ToString()
         {

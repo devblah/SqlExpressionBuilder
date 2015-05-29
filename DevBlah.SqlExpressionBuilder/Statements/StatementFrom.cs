@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using DevBlah.SqlExpressionBuilder.Meta;
 
 namespace DevBlah.SqlExpressionBuilder.Statements
 {

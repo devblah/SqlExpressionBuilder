@@ -1,4 +1,5 @@
 ﻿using DevBlah.SqlExpressionBuilder.Expressions;
+using DevBlah.SqlExpressionBuilder.Meta;
 using Xunit;
 
 namespace DevBlah.SqlExpressionBuilder.Tests

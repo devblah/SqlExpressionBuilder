@@ -2,7 +2,7 @@
 using System.Linq;
 using DevBlah.SqlExpressionBuilder.Expressions;
 
-namespace DevBlah.SqlExpressionBuilder
+namespace DevBlah.SqlExpressionBuilder.Meta
 {
     /// <summary>
     /// represents a database table

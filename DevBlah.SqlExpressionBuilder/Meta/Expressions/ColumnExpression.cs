@@ -1,4 +1,6 @@
-﻿namespace DevBlah.SqlExpressionBuilder.Expressions
+﻿using DevBlah.SqlExpressionBuilder.Meta;
+
+namespace DevBlah.SqlExpressionBuilder.Expressions
 {
     /// <summary>
     /// Creates an expression for a specific table column

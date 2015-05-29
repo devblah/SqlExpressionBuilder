@@ -47,7 +47,6 @@
     <Compile Include="InsertExpressionBuilderFact.cs" />
     <Compile Include="SelectExpressionBuilderFacts.cs" />
     <Compile Include="ColumnAndTableFacts.cs" />
-    <Compile Include="CompareFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

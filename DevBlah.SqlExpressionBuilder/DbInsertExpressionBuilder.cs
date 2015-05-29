@@ -14,8 +14,11 @@ namespace DevBlah.SqlExpressionBuilder
         where TDbParameter : IDbDataParameter, new()
     {
         protected IList<string> ColumnKeys;
+
         private List<RowSet> _insertSets;
+
         private string _tableName;
+
         protected DbInsertExpressionBuilder(string tableName, ColumnSet columns, bool ignoreMissingColumns = false)
         {
             _tableName = tableName;

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using DevBlah.SqlExpressionBuilder.Expressions;
 
-namespace DevBlah.SqlExpressionBuilder.Statements.Where
+namespace DevBlah.SqlExpressionBuilder.Meta.Conditions
 {
-    public class WhereValueSet : IWhereSubSet
+    public class ParameterizedExpressionSubCondition : ISubCondition, IParameterizedCondition
     {
         /// <summary>
         /// corresponding format strings for the compare operations
@@ -26,7 +26,8 @@ namespace DevBlah.SqlExpressionBuilder.Statements.Where
                     { CompareOperations.Like, "{0} LIKE {1}" }
                 };
 
-        public WhereValueSet(ConnectOperations operation, IExpression left, CompareOperations compare, IExpression right)
+        public ParameterizedExpressionSubCondition(ConnectOperations operation, IExpression left,
+            CompareOperations compare, ParameterExpression right)
         {
             Operation = operation;
             Left = left;
@@ -34,15 +35,15 @@ namespace DevBlah.SqlExpressionBuilder.Statements.Where
             Right = right;
         }
 
-        public WhereValueSet(ConnectOperations operation, IExpression left, IExpression right)
+        public ParameterizedExpressionSubCondition(ConnectOperations operation, IExpression left, ParameterExpression right)
             : this(operation, left, CompareOperations.Equals, right)
         { }
 
-        public WhereValueSet(IExpression left, CompareOperations compare, IExpression right)
+        public ParameterizedExpressionSubCondition(IExpression left, CompareOperations compare, ParameterExpression right)
             : this(ConnectOperations.And, left, compare, right)
         { }
 
-        public WhereValueSet(IExpression left, IExpression right)
+        public ParameterizedExpressionSubCondition(IExpression left, ParameterExpression right)
             : this(left, CompareOperations.Equals, right)
         { }
 
@@ -50,13 +51,18 @@ namespace DevBlah.SqlExpressionBuilder.Statements.Where
 
         public IExpression Left { get; set; }
 
-        public IExpression Right { get; set; }
+        public ParameterExpression Right { get; set; }
 
         public CompareOperations CompareOperation { get; set; }
 
         public override string ToString()
         {
             return string.Format(CompareTemplates[CompareOperation], Left, Right);
+        }
+
+        public IEnumerable<ParameterExpression> GetParameterExpressions()
+        {
+            return new[] { Right };
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using DevBlah.SqlExpressionBuilder.Meta;
+using DevBlah.SqlExpressionBuilder.Expressions;
 
-namespace DevBlah.SqlExpressionBuilder.Statements
+namespace DevBlah.SqlExpressionBuilder.Meta
 {
     public class RowSet
     {
@@ -16,9 +16,9 @@ namespace DevBlah.SqlExpressionBuilder.Statements
 
         public ColumnSet ColumnSet { get; private set; }
 
-        public IEnumerable<DbParameterProxy> GetParameters(IEnumerable<string> columns)
+        public IEnumerable<ParameterExpression> GetParameters(IEnumerable<string> columns)
         {
-            var parameters = new List<DbParameterProxy>();
+            var parameters = new List<ParameterExpression>();
 
             if (Row == null)
             {
@@ -29,7 +29,7 @@ namespace DevBlah.SqlExpressionBuilder.Statements
             {
                 Tuple<DbType, int?> columnMeta = ColumnSet[columnKey];
 
-                var param = new DbParameterProxy
+                var param = new ParameterExpression
                 {
                     DbType = columnMeta.Item1,
                     ParameterName = string.Format("@{0}", columnKey),

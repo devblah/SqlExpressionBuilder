@@ -1,6 +1,6 @@
 ﻿namespace DevBlah.SqlExpressionBuilder.Statements
 {
-    internal abstract class StatementBase
+    public abstract class StatementBase
     {
         public SqlExpressionTypes Type { get; private set; }
 

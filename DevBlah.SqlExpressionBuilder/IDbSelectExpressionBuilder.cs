@@ -2,13 +2,15 @@
 using System.Data;
 using DevBlah.SqlExpressionBuilder.Expressions;
 using DevBlah.SqlExpressionBuilder.Interfaces;
+using DevBlah.SqlExpressionBuilder.Meta;
 
 namespace DevBlah.SqlExpressionBuilder
 {
     /// <summary>
     /// Interface for creating a implementation for a specific database driver
     /// </summary>
-    public interface IDbSelectExpressionBuilder<out TFluent, TDbParameter> : IWhereStatementFacade<TFluent>
+    public interface IDbSelectExpressionBuilder<out TFluent, TDbParameter>
+        : IWhereStatementFacade<TFluent>, IJoinStatementFacade<TFluent>
         where TFluent : IDbSelectExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter
     {
@@ -23,6 +25,37 @@ namespace DevBlah.SqlExpressionBuilder
         /// TODO: make generic for other db types
         /// </summary>
         int Top { get; set; }
+
+        /// <summary>
+        /// Binds a IDbDataParameter object to this query
+        /// </summary>
+        /// <param name="parameter">IDbDataParameter object</param>
+        /// <returns>this instance</returns>
+        TFluent BindParameter(TDbParameter parameter);
+
+        /// <summary>
+        /// Binds a parameter, which is already configured
+        /// </summary>
+        /// <param name="name">name of the parameter</param>
+        /// <param name="value">value of the parameter</param>
+        /// <returns>this instance</returns>
+        TFluent BindParameter(string name, object value);
+
+        /// <summary>
+        /// Binds a parameter, which isn't configured yet
+        /// </summary>
+        /// <param name="name">name of the param</param>
+        /// <param name="dbType">Database Type</param>
+        /// <param name="value">value to bind</param>
+        /// <returns></returns>
+        TFluent BindParameter(string name, DbType dbType, object value);
+
+        /// <summary>
+        /// Binds a bunch of IDbDataParameter objects to this query
+        /// </summary>
+        /// <param name="parameters">Liste von IDbDataParametern</param>
+        /// <returns>this instance</returns>
+        TFluent BindParameters(IEnumerable<TDbParameter> parameters);
 
         /// <summary>
         /// Adds the distinct keyword to the query, to avoid getting duplicate rows
@@ -86,379 +119,6 @@ namespace DevBlah.SqlExpressionBuilder
         /// <param name="columns">all columns which should be grouped</param>
         /// <returns></returns>
         TFluent Group(IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="type">type of the join</param>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent Join(SqlJoinTypes type, Table table, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="type">type of the join</param>
-        /// <param name="table">name of the table to join</param>
-        /// <param name="alias">shorthand for the table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent Join(SqlJoinTypes type, string table, string alias, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="type">type of the join</param>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <returns>this instance</returns>
-        TFluent Join(SqlJoinTypes type, Table table, string on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="type">type of the join</param>
-        /// <param name="on">Columns to Join. </param>
-        /// <returns>this instance</returns>
-        TFluent Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="type">type of the join</param>
-        /// <param name="on">on clause for the join as compare expression</param>
-        /// <param name="columns">list of column names, which should be selected</param>
-        /// <returns>this instance</returns>
-        TFluent Join(SqlJoinTypes type, Compare<ColumnExpression, ColumnExpression> on,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(Table table, string on);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">name of the table to join</param>
-        /// <param name="alias">shorthand for the table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(string table, string alias, string on);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(Table table, string on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">Columns to Join. </param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(Compare<ColumnExpression, ColumnExpression> on);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">on clause for the join as compare expression</param>
-        /// <param name="columns">list of column names, which should be selected</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
-
-        /// <summary>
-        /// Adds a INNER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinInner(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(Table table, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">name of the table to join</param>
-        /// <param name="alias">shorthand for the table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(string table, string alias, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(Table table, string on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">Columns to Join. </param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(Compare<ColumnExpression, ColumnExpression> on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">on clause for the join as compare expression</param>
-        /// <param name="columns">list of column names, which should be selected</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a LEFT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected);
-
-        /// <summary>
-        /// Adds a LEFT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a LEFT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
-
-        /// <summary>
-        /// Adds a LEFT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinLeft(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(Table table, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">name of the table to join</param>
-        /// <param name="alias">shorthand for the table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(string table, string alias, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(Table table, string on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">Columns to Join. </param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(Compare<ColumnExpression, ColumnExpression> on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">on clause for the join as compare expression</param>
-        /// <param name="columns">list of column names, which should be selected</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a OUTER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected);
-
-        /// <summary>
-        /// Adds a OUTER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a OUTER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
-
-        /// <summary>
-        /// Adds a OUTER JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinOuter(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(Table table, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">name of the table to join</param>
-        /// <param name="alias">shorthand for the table to join</param>
-        /// <param name="on">on clause as string</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(string table, string alias, string on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table
-        /// </summary>
-        /// <param name="table">table to join</param>
-        /// <param name="on">on clause</param>
-        /// <param name="columns">list of columns to select</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(Table table, string on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">Columns to Join. </param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(Compare<ColumnExpression, ColumnExpression> on);
-
-        /// <summary>
-        /// Adds a JOIN clause for the given table. First column of the expression comparer references to
-        /// the join table, second column to the table which will be referenced by the join.
-        /// </summary>
-        /// <param name="on">on clause for the join as compare expression</param>
-        /// <param name="columns">list of column names, which should be selected</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(Compare<ColumnExpression, ColumnExpression> on, IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a RIGHT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected);
-
-        /// <summary>
-        /// Adds a RIGHT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected,
-            IEnumerable<string> columns);
-
-        /// <summary>
-        /// Adds a RIGHT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare);
-
-        /// <summary>
-        /// Adds a RIGHT JOIN clause for the given table.
-        /// </summary>
-        /// <param name="actual">column of the join table</param>
-        /// <param name="expected">referenced join column</param>
-        /// <param name="compare">how the two columns should be compared</param>
-        /// <param name="columns">list of columns to be selected from the join table</param>
-        /// <returns>this instance</returns>
-        TFluent JoinRight(ColumnExpression actual, ColumnExpression expected, CompareOperations compare,
-            IEnumerable<string> columns);
 
         /// <summary>
         /// adds a column to the order expression
