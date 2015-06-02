@@ -453,7 +453,7 @@ namespace DevBlah.SqlExpressionBuilder
             set { _stmtSelect.Top = value; }
         }
 
-        public TFluent BindParameter(TDbParameter parameter)
+        public TFluent BindParameter(ParameterExpression parameter)
         {
             ParameterExpression existing = _FindDbParameter(parameter.ParameterName);
 
@@ -483,9 +483,9 @@ namespace DevBlah.SqlExpressionBuilder
             return (TFluent)this;
         }
 
-        public TFluent BindParameters(IEnumerable<TDbParameter> parameters)
+        public TFluent BindParameters(IEnumerable<ParameterExpression> parameters)
         {
-            foreach (TDbParameter param in parameters)
+            foreach (ParameterExpression param in parameters)
             {
                 BindParameter(param);
             }
@@ -640,10 +640,6 @@ namespace DevBlah.SqlExpressionBuilder
 
         public TFluent Order(ColumnExpression column, OrderOptions options, ExpressionOptions expOptions)
         {
-            if (!_IsTablePresent(column.Table))
-            {
-                throw new Exception("The table of the order column doesn't exist in this context.");
-            }
             if (expOptions == ExpressionOptions.Overwrite)
             {
                 _stmtOrder.Columns.Clear();
@@ -719,6 +715,11 @@ namespace DevBlah.SqlExpressionBuilder
         }
 
         public TFluent Where(string expression, IEnumerable<ParameterExpression> parameters)
+        {
+            return IWhereStatementFacadeMixinExtensions.Where(this, expression, parameters);
+        }
+
+        public TFluent Where(string expression, params ParameterExpression[] parameters)
         {
             return IWhereStatementFacadeMixinExtensions.Where(this, expression, parameters);
         }
@@ -803,11 +804,6 @@ namespace DevBlah.SqlExpressionBuilder
             }
 
             return table != null;
-        }
-
-        private bool _IsTablePresent(Table table)
-        {
-            return _stmtFrom.Tables.Any(x => x == table) || _stmtJoin.Any(x => table == x.Table);
         }
 
         private ParameterExpression _FindDbParameter(string name)

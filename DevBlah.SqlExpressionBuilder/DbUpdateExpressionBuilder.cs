@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Text;
 using DevBlah.SqlExpressionBuilder.Expressions;
 using DevBlah.SqlExpressionBuilder.Meta;
 using DevBlah.SqlExpressionBuilder.Meta.Conditions;
@@ -16,22 +19,61 @@ namespace DevBlah.SqlExpressionBuilder
 
         private readonly StatementWhere _stmtWhere;
 
-        public RowSet Row { get; private set; }
-
-        public ColumnSet ColumnSet { get; set; }
+        public RowSet RowSet { get; private set; }
 
         public StatementWhere WhereStmt { get { return _stmtWhere; } }
 
-        public IEnumerable<TDbParameter> Parameters { get; set; }
+        public string Table { get; private set; }
 
-        public DbUpdateExpressionBuilder(RowSet row, ConditionSet whereConditionSet)
+        public IEnumerable<TDbParameter> Parameters
         {
-            Row = row;
+            get
+            {
+                var list = new List<ParameterExpression>(RowSet.GetParameters(Table));
+
+                list.AddRange(WhereStmt.ConditionSet.GetParameterExpressions());
+
+                return list
+                    .Select(x =>
+                    {
+                        var param = new TDbParameter
+                        {
+                            ParameterName = x.ParameterName,
+                            DbType = x.DbType,
+                            Value = x.Value
+                        };
+
+                        if (x.Size.HasValue)
+                        {
+                            param.Size = x.Size.Value;
+                        }
+
+                        return param;
+                    });
+            }
+        }
+
+        public DbUpdateExpressionBuilder(string table, RowSet rowSet, ConditionSet whereConditionSet)
+        {
+            Table = table;
+            RowSet = rowSet;
             _stmtWhere = new StatementWhere(whereConditionSet);
         }
 
-        public DbUpdateExpressionBuilder(ColumnSet columnSet, IDictionary<string, object> row, ConditionSet whereConditionSet)
-            : this(new RowSet(columnSet) { Row = row }, whereConditionSet)
+        public DbUpdateExpressionBuilder(string table, ColumnSet columnSet, IDictionary<string, object> row,
+            ConditionSet whereConditionSet)
+            : this(table, new RowSet(columnSet, row), whereConditionSet)
+        { }
+
+        public DbUpdateExpressionBuilder(string table, RowSet rowSet)
+        {
+            Table = table;
+            RowSet = rowSet;
+            _stmtWhere = new StatementWhere(new ConditionSet());
+        }
+
+        public DbUpdateExpressionBuilder(string table, ColumnSet columnSet, IDictionary<string, object> row)
+            : this(table, new RowSet(columnSet, row))
         { }
 
         public TFluent Where(string clause)
@@ -40,6 +82,11 @@ namespace DevBlah.SqlExpressionBuilder
         }
 
         public TFluent Where(string expression, IEnumerable<ParameterExpression> parameters)
+        {
+            return IWhereStatementFacadeMixinExtensions.Where(this, expression, parameters);
+        }
+
+        public TFluent Where(string expression, params ParameterExpression[] parameters)
         {
             return IWhereStatementFacadeMixinExtensions.Where(this, expression, parameters);
         }
@@ -62,6 +109,41 @@ namespace DevBlah.SqlExpressionBuilder
         public TFluent Where(IExpression exp1, IExpression exp2, CompareOperations compare)
         {
             return IWhereStatementFacadeMixinExtensions.Where(this, exp1, exp2, compare);
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder("UPDATE ");
+            sb.AppendFormat("{0} SET ", Table);
+
+            var columns = new List<string>();
+
+            foreach (KeyValuePair<string, object> row in RowSet)
+            {
+                KeyValuePair<string, Tuple<DbType, int?>> col;
+
+                try
+                {
+                    col = RowSet.ColumnSet.First(x => x.Key == row.Key);
+                }
+                catch (Exception)
+                {
+                    throw new InvalidOperationException(
+                        string.Format("The column '{0}' doesn't exist in the columnSet", row.Key));
+                }
+
+                columns.Add(string.Format("{0}.{1} = @{2}_{1}", Table, col.Key, Table.Replace(".", "")));
+            }
+
+            sb.Append(string.Join(", ", columns));
+
+            if (_stmtWhere.ConditionSet.Count > 0)
+            {
+                sb.Append(" ");
+                sb.Append(_stmtWhere);
+            }
+
+            return sb.ToString();
         }
     }
 }

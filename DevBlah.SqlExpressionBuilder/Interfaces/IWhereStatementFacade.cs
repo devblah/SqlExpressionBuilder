@@ -25,6 +25,14 @@ namespace DevBlah.SqlExpressionBuilder.Interfaces
         TFluent Where(string expression, IEnumerable<ParameterExpression> parameters);
 
         /// <summary>
+        /// Adds a clause to where statement
+        /// </summary>
+        /// <param name="expression">where clause to add</param>
+        /// <param name="parameters">parameters which belong to this expression</param>
+        /// <returns>this instance</returns>
+        TFluent Where(string expression, params ParameterExpression[] parameters);
+
+        /// <summary>
         /// Adds a single comparison between a column and a given value, given as a string
         /// </summary>
         /// <param name="exp">expression, which should be compared</param>

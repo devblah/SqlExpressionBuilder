@@ -31,7 +31,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="parameter">IDbDataParameter object</param>
         /// <returns>this instance</returns>
-        TFluent BindParameter(TDbParameter parameter);
+        TFluent BindParameter(ParameterExpression parameter);
 
         /// <summary>
         /// Binds a parameter, which is already configured
@@ -55,7 +55,7 @@ namespace DevBlah.SqlExpressionBuilder
         /// </summary>
         /// <param name="parameters">Liste von IDbDataParametern</param>
         /// <returns>this instance</returns>
-        TFluent BindParameters(IEnumerable<TDbParameter> parameters);
+        TFluent BindParameters(IEnumerable<ParameterExpression> parameters);
 
         /// <summary>
         /// Adds the distinct keyword to the query, to avoid getting duplicate rows

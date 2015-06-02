@@ -25,12 +25,6 @@ namespace DevBlah.SqlExpressionBuilder
         void AddRow(IDictionary<string, object> row);
 
         /// <summary>
-        /// Adds a row to the current insert builder
-        /// </summary>
-        /// <param name="row"></param>
-        void AddRow(dynamic row);
-
-        /// <summary>
         /// fills a command with the query representing the current expression state
         /// </summary>
         /// <param name="cmd">SqlCommand to fill</param>

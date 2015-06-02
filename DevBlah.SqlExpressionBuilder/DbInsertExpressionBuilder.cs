@@ -4,7 +4,6 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using DevBlah.SqlExpressionBuilder.Meta;
-using DevBlah.SqlExpressionBuilder.Statements;
 
 namespace DevBlah.SqlExpressionBuilder
 {
@@ -17,11 +16,9 @@ namespace DevBlah.SqlExpressionBuilder
 
         private List<RowSet> _insertSets;
 
-        private string _tableName;
-
-        protected DbInsertExpressionBuilder(string tableName, ColumnSet columns, bool ignoreMissingColumns = false)
+        protected DbInsertExpressionBuilder(string table, ColumnSet columns, bool ignoreMissingColumns = false)
         {
-            _tableName = tableName;
+            Table = table;
             ColumnSet = columns;
 
             if (!ignoreMissingColumns)
@@ -32,7 +29,9 @@ namespace DevBlah.SqlExpressionBuilder
 
         public ColumnSet ColumnSet { get; private set; }
 
-        public IEnumerable<TDbParameter> Parameters { get { return _GetParameters(); } }
+        public IEnumerable<TDbParameter> Parameters { get { return GetParameters(); } }
+
+        public string Table { get; private set; }
 
         public void AddRow(IDictionary<string, object> row)
         {
@@ -51,18 +50,9 @@ namespace DevBlah.SqlExpressionBuilder
                 _ValidateAll(row);
             }
 
-            _insertSets.Add(new RowSet(ColumnSet) { Row = row });
-        }
 
-        public void AddRow(dynamic row)
-        {
-            var dict = row.ToDictionary();
-            if (dict == null)
-            {
-                throw new ArgumentException("The dynamic object isn't a valid row.");
-            }
 
-            AddRow(dict);
+            _insertSets.Add(new RowSet(ColumnSet, row));
         }
 
         public TFluent FillCommand(IDbCommand cmd)
@@ -85,7 +75,7 @@ namespace DevBlah.SqlExpressionBuilder
             }
 
             var sb = new StringBuilder("INSERT INTO ");
-            sb.Append(_tableName).Append(" (");
+            sb.Append(Table).Append(" (");
             sb.Append(string.Join(", ", ColumnKeys)).Append(") VALUES ");
 
             var parameterStrings = new List<string>();
@@ -93,8 +83,8 @@ namespace DevBlah.SqlExpressionBuilder
             for (int i = 0; i < _insertSets.Count; i++)
             {
                 int index = i;
-                parameterStrings.Add(string.Join(", ",
-                    ColumnKeys.Select(c => string.Format("@{0}_{1}", c, index))));
+                parameterStrings.Add(string.Join(", ", ColumnKeys.Select(
+                    c => string.Format("@{0}_{1}_{2}", Table.Replace(".", ""), c, index))));
             }
 
             sb.Append(string.Join(", ", parameterStrings.Select(s => string.Format("({0})", s))));
@@ -102,7 +92,7 @@ namespace DevBlah.SqlExpressionBuilder
             return sb.ToString();
         }
 
-        private IEnumerable<TDbParameter> _GetParameters()
+        public IEnumerable<TDbParameter> GetParameters()
         {
             var parameters = new List<TDbParameter>();
 
@@ -114,7 +104,7 @@ namespace DevBlah.SqlExpressionBuilder
             for (int i = 0; i < _insertSets.Count; i++)
             {
                 int index = i;
-                var currentParameters = _insertSets[i].GetParameters(ColumnKeys);
+                var currentParameters = _insertSets[i].GetParameters(Table, ColumnKeys);
                 parameters.AddRange(currentParameters.Select(p => p.ToDbDataParameter<TDbParameter>(index)));
             }
 

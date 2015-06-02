@@ -26,7 +26,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             Assert.Equal(param.ParameterName, builder.Parameters.First().ParameterName);
 
             // Rebind 
-            var newParam = new SqlParameter("@foo", SqlDbType.Int) { Value = 6 };
+            var newParam = new ParameterExpression("@foo", DbType.Int32) { Value = 6 };
             builder.BindParameter(newParam);
             Assert.Equal(1, builder.Parameters.Count());
             Assert.Equal(newParam.ParameterName, builder.Parameters.First().ParameterName);
@@ -37,6 +37,47 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             Assert.Equal(1, builder.Parameters.Count());
             Assert.Equal(newParam.ParameterName, builder.Parameters.First().ParameterName);
             Assert.Equal(7, builder.Parameters.First().Value);
+        }
+
+        [Fact]
+        public void BindParameter_RebindMultipleParameters()
+        {
+            var builder = new MsSqlSelectExpressionBuilder();
+            
+            var table = new Table("test", "t");
+            builder.From(table);
+            builder.Where(table.GetColumn("foo"), new ParameterExpression("@foo", DbType.Int32) { Value = 12 });
+
+            var joinTable = new Table("join", "j");
+            builder.JoinInner(joinTable.GetColumn("bar"), new ParameterExpression("@bar", DbType.Int32) { Value = 5 });
+
+            Assert.Equal(2, builder.Parameters.Count());
+
+            SqlParameter param = builder.Parameters.First(p => p.ParameterName == "@foo");
+
+            Assert.Equal(DbType.Int32, param.DbType);
+            Assert.Equal(12, param.Value);
+
+            param = builder.Parameters.First(p => p.ParameterName == "@bar");
+
+            Assert.Equal(DbType.Int32, param.DbType);
+            Assert.Equal(5, param.Value);
+
+            builder.BindParameters(new List<ParameterExpression>
+            {
+                new ParameterExpression("@foo", DbType.String) { Value = "foo"},
+                new ParameterExpression("@bar", DbType.String) { Value = "bar"},
+            });
+
+            param = builder.Parameters.First(p => p.ParameterName == "@foo");
+
+            Assert.Equal(DbType.String, param.DbType);
+            Assert.Equal("foo", param.Value);
+
+            param = builder.Parameters.First(p => p.ParameterName == "@bar");
+
+            Assert.Equal(DbType.String, param.DbType);
+            Assert.Equal("bar", param.Value);
         }
 
         [Fact]
@@ -619,19 +660,6 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             string expected = expectedTemplate + "ORDER BY f.bla ASC, f.blubb DESC";
             Assert.Equal(expected, builder.ToString());
 
-            // Fails
-            bool throws = false;
-            builder = new MsSqlSelectExpressionBuilder();
-            builder.From(fromTable).Order("bla");
-            try
-            {
-                builder.Order("b.blubb", OrderOptions.Desc); // table with alias b not found
-            }
-            catch
-            {
-                throws = true;
-            }
-            Assert.True(throws);
 
             builder
                 .JoinInner(joinTable, "wayne = wayne")
@@ -650,20 +678,6 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             builder.Order(new ColumnExpression("foo", fromTable), OrderOptions.Desc, ExpressionOptions.Overwrite);
             expected = expectedTemplate + "ORDER BY f.foo DESC";
             Assert.Equal(expected, builder.ToString());
-
-            // Fails
-            throws = false;
-            builder = new MsSqlSelectExpressionBuilder();
-            builder.From(fromTable).Order("bla");
-            try
-            {
-                builder.Order(new ColumnExpression("foo", joinTable)); // table does not exist in sql builder
-            }
-            catch
-            {
-                throws = true;
-            }
-            Assert.True(throws);
         }
 
         [Fact]
@@ -756,10 +770,11 @@ namespace DevBlah.SqlExpressionBuilder.Tests
                 .From(fromTable)
                 .Select(addressCol)
                 .Select(zipCityCol)
-                .Where(new Expression(addressCol.Alias), "@address");
+                .Where(new Expression(addressCol.Alias), "@address")
+                .Where(new Expression(zipCityCol.Alias), "@zipCity", CompareOperations.Like);
             Assert.Equal(
                 "SELECT CONCAT(Street, Number) AS Address, CONCAT(Zip, City) AS ZipCity FROM dbo.from f " +
-                    "WHERE (Address = @address)", builder.ToString());
+                    "WHERE (Address = @address AND ZipCity LIKE @zipCity)", builder.ToString());
         }
 
         [Fact]
@@ -789,15 +804,44 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             Assert.Equal("SELECT * FROM dbo.from f WHERE (bla = @bla OR blubb = @bla)", builder.ToString());
         }
 
-        //[Fact]
-        //public void WhereQuery_SimpleWithParameterFact()
-        //{
-        //    var fromTable = new Table("dbo.from", "f");
-        //    var builder = new MsSqlSelectExpressionBuilder();
-        //    builder.From(fromTable);
-        //    builder.Where("bla = @bla OR blubb = @bla", new[] { new DbParameterProxy("@bla") });
-        //    Assert.Equal("SELECT * FROM dbo.from f WHERE bla = @bla OR blubb = @bla", builder.ToString());
-        //    Assert.Equal(1, builder.Parameters.Count());
-        //}
+        [Fact]
+        public void GetParameters_ByJoin()
+        {
+            var builder = new MsSqlSelectExpressionBuilder();
+            builder.From("test", "t");
+
+            var joinTable = new Table("join", "j");
+
+            builder.JoinInner(joinTable.GetColumn("foo"), new ParameterExpression("@foo", DbType.Int32) { Value = 12 });
+
+            Assert.Equal(1, builder.Parameters.Count());
+
+            SqlParameter param = builder.Parameters.First();
+
+            Assert.Equal("@foo", param.ParameterName);
+            Assert.Equal(DbType.Int32, param.DbType);
+            Assert.Equal(12, param.Value);
+        }
+
+        [Fact]
+        public void GetParameters_ByWhere()
+        {
+            var builder = new MsSqlSelectExpressionBuilder();
+
+            var table = new Table("test", "t");
+            builder.From(table);
+
+            builder.Where(table.GetColumn("foo"), new ParameterExpression("@foo", DbType.Int32) { Value = 12 });
+
+            Assert.Equal(1, builder.Parameters.Count());
+
+            SqlParameter param = builder.Parameters.First();
+
+            Assert.Equal("@foo", param.ParameterName);
+            Assert.Equal(DbType.Int32, param.DbType);
+            Assert.Equal(12, param.Value);
+        }
+
+        
     }
 }

@@ -10,9 +10,7 @@ namespace DevBlah.SqlExpressionBuilder
         where TFluent : IDbUpdateExpressionBuilder<TFluent, TDbParameter>
         where TDbParameter : IDbDataParameter
     {
-        RowSet Row { get; }
-
-        ColumnSet ColumnSet { get; }
+        RowSet RowSet { get; }
 
         /// <summary>
         /// List of currently assigned db parameters
