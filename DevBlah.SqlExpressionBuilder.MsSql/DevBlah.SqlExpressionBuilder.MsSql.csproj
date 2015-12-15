@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MsSqlDeleteExpressionBuilder.cs" />
     <Compile Include="MsSqlInsertExpressionBuilder.cs" />
     <Compile Include="MsSqlUpdateExpressionBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

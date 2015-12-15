@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="DbDeleteExpressionBuilder.cs" />
     <Compile Include="DbUpdateExpressionBuilder.cs" />
+    <Compile Include="IDbDeleteExpressionBuilder.cs" />
     <Compile Include="Interfaces\IJoinStatementFacade.cs" />
     <Compile Include="Meta\Conditions\ExpressionSubCondition.cs" />
     <Compile Include="Meta\Conditions\IParameterizedCondition.cs" />

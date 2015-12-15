@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace DevBlah.SqlExpressionBuilder.Mapping
+namespace DevBlah.SqlExpressionBuilder.ObjectMap.Configuration
 {
     internal class Item
     {

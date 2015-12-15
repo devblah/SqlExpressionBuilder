@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 
-namespace DevBlah.SqlExpressionBuilder.Mapping
+namespace DevBlah.SqlExpressionBuilder.ObjectMap
 {
     internal static class TypeMap
     {

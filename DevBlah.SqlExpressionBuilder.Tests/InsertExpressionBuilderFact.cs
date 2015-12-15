@@ -136,22 +136,22 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             Assert.Equal(6, parameters.Count);
 
-            Assert.Equal("@Id_0", parameters[0].ParameterName);
+            Assert.Equal("@table_Id_0", parameters[0].ParameterName);
             Assert.Equal(5, parameters[0].Value);
 
-            Assert.Equal("@Content_0", parameters[1].ParameterName);
+            Assert.Equal("@table_Content_0", parameters[1].ParameterName);
             Assert.Equal("foo", parameters[1].Value);
 
-            Assert.Equal("@CreatedAt_0", parameters[2].ParameterName);
+            Assert.Equal("@table_CreatedAt_0", parameters[2].ParameterName);
             Assert.Equal(date, parameters[2].Value);
 
-            Assert.Equal("@Id_1", parameters[3].ParameterName);
+            Assert.Equal("@table_Id_1", parameters[3].ParameterName);
             Assert.Equal(6, parameters[3].Value);
 
-            Assert.Equal("@Content_1", parameters[4].ParameterName);
+            Assert.Equal("@table_Content_1", parameters[4].ParameterName);
             Assert.Equal("bar", parameters[4].Value);
 
-            Assert.Equal("@CreatedAt_1", parameters[5].ParameterName);
+            Assert.Equal("@table_CreatedAt_1", parameters[5].ParameterName);
             Assert.Equal(DBNull.Value, parameters[5].Value);
         }
 
@@ -206,7 +206,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             const string expected =
                 "INSERT INTO table (Id, Content, CreatedAt) " +
-                "VALUES (@tableId_0, @tableContent_0, @tableCreatedAt_0)";
+                "VALUES (@table_Id_0, @table_Content_0, @table_CreatedAt_0)";
 
             Assert.Equal(expected, builder.ToString());
         }
@@ -232,7 +232,8 @@ namespace DevBlah.SqlExpressionBuilder.Tests
 
             const string expected =
                 "INSERT INTO table (Id, Content, CreatedAt) " +
-                "VALUES (@tableId_0, @tableContent_0, @tableCreatedAt_0), (@tableId_1, @tableContent_1, @tableCreatedAt_1)";
+                "VALUES (@table_Id_0, @table_Content_0, @table_CreatedAt_0), " +
+                "(@table_Id_1, @table_Content_1, @table_CreatedAt_1)";
 
             Assert.Equal(expected, builder.ToString());
         }
@@ -255,7 +256,7 @@ namespace DevBlah.SqlExpressionBuilder.Tests
             });
 
             const string expected =
-                "INSERT INTO table (Id, Content) VALUES (@tableId_0, @tableContent_0), (@tableId_1, @tableContent_1)";
+                "INSERT INTO table (Id, Content) VALUES (@table_Id_0, @table_Content_0), (@table_Id_1, @table_Content_1)";
 
             Assert.Equal(expected, builder.ToString());
         }

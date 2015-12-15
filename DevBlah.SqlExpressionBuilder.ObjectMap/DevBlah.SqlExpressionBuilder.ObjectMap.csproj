@@ -39,10 +39,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mapper\MapperItem.cs" />
-    <Compile Include="Mapper\MappingSet.cs" />
+    <Compile Include="Converter\INamingConventionConverter.cs" />
+    <Compile Include="IMapper.cs" />
+    <Compile Include="IMappingEngine.cs" />
+    <Compile Include="Configuration\IMappingSet.cs" />
+    <Compile Include="Configuration\Item.cs" />
+    <Compile Include="Configuration\MappingSet.cs" />
     <Compile Include="TypeMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DevBlah.DotNetToolkit\DevBlah.DotNetToolkit\DevBlah.DotNetToolkit.csproj">
+      <Project>{eef3293d-bfc0-49cb-bcb0-1b0e98fd3f25}</Project>
+      <Name>DevBlah.DotNetToolkit</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DevBlah.SqlExpressionBuilder\DevBlah.SqlExpressionBuilder.csproj">
+      <Project>{161151d0-878f-4d7c-a1f8-646a360df3cd}</Project>
+      <Name>DevBlah.SqlExpressionBuilder</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Queryable\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
